@@ -33,8 +33,6 @@ class Fetch(StageBase):
     def compute_cycle_enery(self):
         pass
 
-    def compute_total_energy(self):
-        return self.total_energy
 
 
 

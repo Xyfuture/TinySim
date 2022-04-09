@@ -63,9 +63,9 @@ class StageBase(metaclass=ABCMeta):
     def add_post_stage(self,s):
         self.post_stage_list.append(s)
 
-    @abstractmethod
+
     def compute_total_energy(self):
-        pass
+        return self.total_energy
 
     # 一个周期的
     @abstractmethod
