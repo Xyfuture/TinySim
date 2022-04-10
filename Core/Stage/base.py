@@ -12,7 +12,7 @@ from Core.Utils.stall import StallEvent
 
 class StageBase(metaclass=ABCMeta):
     def __init__(self):
-        self.inst = instruction()
+        self.stage_data = instruction()
         self.recv_data = instruction()
         self.send_data = instruction()
 
@@ -34,13 +34,24 @@ class StageBase(metaclass=ABCMeta):
     def send(self):
         pass
 
+    # 处理当前的stage_data ,同时计算功耗等信息
     @abstractmethod
     def ticktock(self):
         pass
 
-    # 当前stage对其他stage是否产生stall
+    # 根据收到的信息更新stage_data
+    @abstractmethod
+    def update(self):
+        pass
+
+    # 当前stage对其他stage是否产生stall,return None 表示没有stall发生
     @abstractmethod
     def stall_out(self):
+        pass
+
+    # 一个周期的
+    @abstractmethod
+    def compute_cycle_enery(self):
         pass
 
     # 其他stage产生的stall信息传到当前stage
@@ -67,16 +78,14 @@ class StageBase(metaclass=ABCMeta):
     def compute_total_energy(self):
         return self.total_energy
 
-    # 一个周期的
-    @abstractmethod
-    def compute_cycle_enery(self):
-        pass
 
-
-    def add_cycle_cnt(self,stall=False):
+    def add_cycle_cnt(self):
         self.total_cycles += 1
-        if stall:
+        if self.check_stalled():
             self.stall_cycles += 1
 
     def check_stalled(self):
         return len(self.stall_info_dict) == 0
+
+    def check_not_stalled(self):
+        return not self.check_stalled()

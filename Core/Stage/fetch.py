@@ -34,6 +34,8 @@ class Fetch(StageBase):
         pass
 
 
+    def update(self):
+        pass
 
 
 

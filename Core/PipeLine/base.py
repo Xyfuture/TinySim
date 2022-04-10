@@ -82,7 +82,6 @@ class PipeLineBase(metaclass=ABCMeta):
         visited = [self.head_stage]
         while not Q.empty():
             cur_stage = Q.get()
-
             tmp_data = cur_stage.send()
             for stage in cur_stage.post_stage_list:
                 stage.recv(tmp_data)
@@ -91,8 +90,24 @@ class PipeLineBase(metaclass=ABCMeta):
                     Q.put(stage)
 
 
+    def update_forward(self):
+        Q = queue.Queue()
+        Q.put(self.head_stage)
+        visited = [self.head_stage]
+
+        while not Q.empty():
+            cur_stage = Q.get()
+            cur_stage.update()
+
+            for stage in cur_stage.post_stage_list:
+                if stage not in visited:
+                    visited.append(stage)
+                    Q.put(stage)
+
+
 
     def forward_one_cycle(self):
+        self.update_forward()
         self.ticktock_forward()
         self.stall_forward()
         self.transfer_forward()
