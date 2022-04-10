@@ -1,7 +1,7 @@
 
 
 from Core.Stage.base import StageBase
-from Core.Utils.inst import InstBuffer
+from Core.Instruction.inst import InstBuffer
 
 
 class Fetch(StageBase):

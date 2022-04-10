@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from abc import ABCMeta,abstractmethod
 
-from Core.Utils.inst import instruction
+from Core.Instruction.inst import instruction
 
 
 # 在这个里面不仅记录了每个stage传输的信息还记录了各个stage之间的连接关系
@@ -21,6 +21,8 @@ class StageBase(metaclass=ABCMeta):
 
         self.pre_stage_list = [] # 构建连接关系
         self.post_stage_list = []
+
+        self.bypass_pre_stage_list = []
 
         self.stall_info_dict = OrderedDict()
 
@@ -89,5 +91,15 @@ class StageBase(metaclass=ABCMeta):
     def check_not_stalled(self):
         return not self.check_stalled()
 
+    # 与Core外进行数据传输
     def set_gateway(self,g):
         self.gateway = g
+
+    def bypass_connect_to(self,*pre_stages):
+        for stage in pre_stages:
+            self.bypass_pre_stage_list.append(stage)
+            # 这个不维持完整的连接了，只保证后面的可以连接到前面的。
+
+    # 该调用只返回一个结果，并不对self进行任何更改，也不计算能耗等信息
+    def bypass_ticktock(self):
+        return None
