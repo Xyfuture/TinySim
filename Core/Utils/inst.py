@@ -1,8 +1,13 @@
 
 
 class instruction:
-    def __init__(self):
-        pass
+    def __init__(self,op=''):
+        self.rd = 0
+        self.rs1 = 0
+        self.rs2 = 0
+        self.imm = 0
+        self.bitwidth = 0
+        self.op = op
 
     def read_binary(self):
         pass

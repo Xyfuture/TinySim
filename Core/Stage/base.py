@@ -1,7 +1,6 @@
 from collections import OrderedDict
 from abc import ABCMeta,abstractmethod
 
-from Core.Stage.ctrl import CtrlEngine
 from Core.Utils.inst import instruction
 
 
@@ -27,13 +26,12 @@ class StageBase(metaclass=ABCMeta):
 
         self.gateway = None
 
-    @abstractmethod
     def recv(self,pre_stage_data):
-        pass
+        self.recv_data = pre_stage_data
 
-    @abstractmethod
+
     def send(self):
-        pass
+        return  self.send_data
 
     # 处理当前的stage_data ,同时计算功耗等信息
     @abstractmethod
@@ -52,7 +50,7 @@ class StageBase(metaclass=ABCMeta):
 
     # 一个周期的
     @abstractmethod
-    def compute_cycle_enery(self):
+    def compute_cycle_energy(self):
         pass
 
     # 其他stage产生的stall信息传到当前stage

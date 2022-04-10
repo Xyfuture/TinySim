@@ -9,33 +9,30 @@ class Fetch(StageBase):
         super(Fetch, self).__init__()
 
         self.pc = 0
+        self.next_pc = 0
         self.inst_buffer = InstBuffer()
 
-    def recv(self,pre_stage_data):
-        pass
-
-    def send(self):
-        return self.inst_buffer[self.pc-1] # pc是个寄存器，在ticktock中的+1 应该发生在这之后
 
     def ticktock(self):
-        self.add_cycle_cnt()
-        if self.check_stalled():
-            pass
-        else:
-            self.pc += 1
+        self.send_data = self.inst_buffer[self.pc]
 
-        self.compute_cycle_enery()
+        if self.check_not_stalled():
+            self.next_pc += 1
+
+
+        self.add_cycle_cnt()
+        self.compute_cycle_energy()
 
 
     def stall_out(self):
         return None
 
-    def compute_cycle_enery(self):
+    def compute_cycle_energy(self):
         pass
 
 
     def update(self):
-        pass
+        self.pc = self.next_pc
 
 
 
