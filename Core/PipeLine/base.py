@@ -105,13 +105,11 @@ class PipeLineBase(metaclass=ABCMeta):
                     Q.put(stage)
 
 
-
     def forward_one_cycle(self):
         self.update_forward()
         self.ticktock_forward()
         self.stall_forward()
         self.transfer_forward()
-
 
 
 

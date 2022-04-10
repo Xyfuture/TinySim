@@ -25,6 +25,7 @@ class StageBase(metaclass=ABCMeta):
 
         self.stall_info_dict = OrderedDict()
 
+        self.gateway = None
 
     @abstractmethod
     def recv(self,pre_stage_data):
@@ -89,3 +90,6 @@ class StageBase(metaclass=ABCMeta):
 
     def check_not_stalled(self):
         return not self.check_stalled()
+
+    def set_gateway(self,g):
+        self.gateway = g
