@@ -123,10 +123,13 @@ class Transfer(StageBase):
         return 1
 
     def process(self):
-        pass
+        if self.stage_data.op == 'ldi':
+            self.reg_file[self.stage_data.rd] = self.stage_data.imm
+        else:
+            pass # 其他暂时不支持，除非实现mem的功能（后续考虑吧
 
     def send_callback(self):
-        pass
+        self.transfer_state = 'finish'
 
     def recv_callback(self):
-        pass
+        self.transfer_state = 'finish'

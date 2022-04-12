@@ -34,4 +34,21 @@ class Scalar(StageBase):
         pass
 
     def scalar_excute(self):
-        pass
+        rd = self.stage_data.rd
+        rs1 = self.stage_data.rs1
+        rs2 = self.stage_data.rs2
+        imm = self.stage_dataa.imm
+        if self.stage_data.op == 'sadd':
+            self.reg_file[rd] = self.reg_file[rs1] + self.reg_file[rs2]
+        elif self.stage_data.op == 'ssub':
+            self.reg_file[rd] = self.reg_file[rs1] - self.reg_file[rs2]
+        elif self.stage_data.op == 'smul':
+            self.reg_file[rd] = self.reg_file[rs1] * self.reg_file[rs2]
+        elif self.stage_data.op == 'sdiv':
+            self.reg_file[rd] = self.reg_file[rs1] // self.reg_file[rs2]
+        elif self.stage_data.op == 'saddi':
+            self.reg_file[rd] = self.reg_file[rs1] + imm
+        elif self.stage_data.op == 'ssubi':
+            self.reg_file[rd] = self.reg_file[rs1] - imm
+        elif self.stage_data.op == 'smuli':
+            self.reg_file[rd] = self.reg_file[rs1] * imm

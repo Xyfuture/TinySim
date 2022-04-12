@@ -52,6 +52,9 @@ class Vector(StageBase):
         # 使用register之后
         if self.inner_reg.state == 'idle':
             if self.current_eu == 'veu':
+                if self.stage_data.op == 'vvset':
+                    self.vvset()
+
                 cycles = self.set_busy_cycle()
                 self.inner_reg.busy_cycles = cycles
                 if cycles > 0:
@@ -123,4 +126,8 @@ class Vector(StageBase):
 
 
     def vvset(self):
-        pass
+        if self.stage_data.op == 'vvset':
+            self.vvset_length = self.reg_file[self.stage_data.rd]
+            self.vvset_bitwidth = self.stage_data.bitwidth
+
+
