@@ -20,10 +20,13 @@ class Vector(StageBase):
         self.state = 'idle'  # 表示下一个周期的情况，给update,stall_out使用的
 
         self.inner_reg = Register()
-        self.inner_reg.stalled = False
+        # self.inner_reg.stalled = False
         self.inner_reg.busy_cycle = 0
         self.inner_reg.state = 'idle'
 
+
+        self.stall_reg = Register()
+        self.stall_reg.stalled = False
         self.stall_event = None
 
     def ticktock(self):
@@ -60,19 +63,8 @@ class Vector(StageBase):
             self.inner_reg.busy_cycles = self.inner_reg.busy_cycles -1
 
 
-        self.stall_event = None
-        if self.inner_reg.stalled:
-            if self.inner_reg.state == 'idle':
-                self.stall_event = StallEvent('VectorExecuteUnit',False)
-                self.inner_reg.stalled = False
-        else:
-            if self.inner_reg.state == 'busy':
-                bypass_info = self.bypass_pre_stage_list[0].bypass_ticktock()
-                eu,inst = bypass_info['eu'],bypass_info['inst']
-                if eu == 'veu':
-                    self.inner_reg.stalled = True
-                    self.stall_event = StallEvent('VectorExecuteUnit',True)
 
+        # 时钟下降沿
         self.inner_reg.update() # 更新reg信息
 
 
@@ -105,7 +97,21 @@ class Vector(StageBase):
         #         self.stalled = False
         #         return StallEvent('VectorExecuteUnit',False)
 
-        #使用register之后
+
+        self.stall_event = None
+        if self.stall_reg.stalled:
+            if self.inner_reg.state == 'idle':
+                self.stall_event = StallEvent('VectorExecuteUnit',False)
+                self.stall_reg.stalled = False
+        else:
+            if self.inner_reg.state == 'busy':
+                bypass_info = self.bypass_pre_stage_list[0].bypass_ticktock()
+                eu,inst = bypass_info['eu'],bypass_info['inst']
+                if eu == 'veu':
+                    self.stall_reg.stalled = True
+                    self.stall_event = StallEvent('VectorExecuteUnit',True)
+
+
         return self.stall_event
 
 
@@ -113,6 +119,8 @@ class Vector(StageBase):
         pass
 
     def set_busy_cycle(self):
+        return 1
+
+
+    def vvset(self):
         pass
-
-

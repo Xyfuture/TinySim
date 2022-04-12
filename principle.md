@@ -26,3 +26,4 @@ On-chip memory使用MNSIM2.0中的数据计算延时和能耗信息。
 
 update (配置上一轮recv的数据)-> ticktoc(计算功耗等信息，配置send的数据)->recv(上一个部件发送的)->send(发送自己的数据)
 
+## 核间的通讯模型
