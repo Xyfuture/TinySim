@@ -80,6 +80,7 @@ class BlockedGateway(GatewayBase):
         if self.dest_ready.get(request.dest_id):
             tmp_packet = DataPacket(self.gateway_id, request.dest_id, request.packet_size, 'data')
             self.outer_send_request(tmp_packet)
+            self.dest_ready[request.dest_id] = False
             # 清除的工作交给finish函数操作
 
 
