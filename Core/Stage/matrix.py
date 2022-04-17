@@ -76,7 +76,8 @@ class Matrix(StageBase):
         return  1
 
     def bypass_ticktock(self):
-        if self.inner_reg.state == 'busy':
-            if self.inner_reg.busy_cycle -1 == 0:
-                return (self.info.rd_value,self.info.rd_value+self.info.length-1)
+        if self.stage_data.op == 'gvr':
+            if self.inner_reg.state == 'busy':
+                if self.inner_reg.busy_cycle -1 == 0:
+                    return (self.info.rd_value,self.info.rd_value+self.info.length-1)
         return None

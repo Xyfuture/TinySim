@@ -32,11 +32,7 @@ class Transfer(StageBase):
         self.transfer_state = 'idle' # 'idle' 'start' 'finish'
 
 
-    def ticktock(self):
-
-        self.compute_cycle_energy()
-        self.add_cycle_cnt()
-
+    def _ticktock(self):
         if self.inner_reg.state == 'idle':
             if self.current_eu == 'dtu':
                 if self.stage_data.op in self.REG_TRANSFER:
@@ -89,6 +85,11 @@ class Transfer(StageBase):
                             self.inner_reg.busy_cycles = self.inner_reg.busy_cycles -1
                         else:
                             self.inner_reg.state = 'idle'
+    def ticktock(self):
+
+        self.compute_cycle_energy()
+        self.add_cycle_cnt()
+
 
         self.inner_reg.update()
 
@@ -139,4 +140,8 @@ class Transfer(StageBase):
         self.transfer_state = 'finish'
 
     def bypass_ticktock(self):
-        pass # hard to do
+        self._ticktock()
+        if self.inner_reg.value['state'] == 'busy' and self.inner_reg.next_value['state'] == 'idle':
+            if self.stage_data.op == 'recv':
+                return (self.info.rs1_addr,self.info.rs1_addr + self.info.length)
+        return None

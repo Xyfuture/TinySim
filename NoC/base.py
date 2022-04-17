@@ -13,8 +13,13 @@ class PendingEvent:
         self.call_back = call_back
         self.describe = describe
 
+    # 重载为了实现堆的构建
     def __cmp__(self, other):
-        pass
+        if self.pending_cycles < other.pending_cycles:
+            return -1
+        elif self.pending_cycles > other.pending_cycles:
+            return 1
+        return 0
 
 
 class PendingQueue:
