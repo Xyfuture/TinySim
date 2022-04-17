@@ -28,6 +28,7 @@ class StageBase(metaclass=ABCMeta):
 
         self.gateway = None
 
+
     def recv(self,pre_stage_data):
         self.recv_data = pre_stage_data
 

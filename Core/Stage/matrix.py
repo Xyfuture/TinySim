@@ -7,6 +7,7 @@ from Core.Utils.stall import StallEvent
 class Matrix(StageBase):
     def __init__(self,reg_file:RegFile):
         super(Matrix, self).__init__()
+        self.info = None
 
         self.reg_file = reg_file
 
@@ -28,7 +29,7 @@ class Matrix(StageBase):
         self.compute_cycle_energy()
 
         if self.inner_reg.state == 'idle':
-            if self.current_eu == 'veu':
+            if self.current_eu == 'meu':
                 cycles = self.set_busy_cycle()
                 self.inner_reg.busy_cycle = cycles
 
@@ -48,6 +49,7 @@ class Matrix(StageBase):
         if self.check_not_stalled():
             if self.inner_reg.state == 'idle':
                 self.current_eu,self.stage_data = self.recv_data['eu'],self.recv_data['inst']
+                self.info = self.recv_data
 
     def stall_out(self):
 
@@ -72,3 +74,9 @@ class Matrix(StageBase):
 
     def set_busy_cycle(self):
         return  1
+
+    def bypass_ticktock(self):
+        if self.inner_reg.state == 'busy':
+            if self.inner_reg.busy_cycle -1 == 0:
+                return (self.info.rd_value,self.info.rd_value+self.info.length-1)
+        return None

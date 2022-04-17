@@ -11,6 +11,8 @@ class Transfer(StageBase):
     CORE_TRANSFER = ['send','recv']
     def __init__(self,reg_file:RegFile):
         super(Transfer, self).__init__()
+        self.info = None
+
 
         self.reg_file = reg_file
         self.current_eu = None
@@ -95,6 +97,8 @@ class Transfer(StageBase):
         if self.check_not_stalled():
             if self.inner_reg.state =='idle':
                 self.current_eu,self.stage_data = self.recv_data['eu'],self.recv_data['inst']
+                self.info = self.recv_data
+
 
 
     def stall_out(self):
@@ -133,3 +137,6 @@ class Transfer(StageBase):
 
     def recv_callback(self):
         self.transfer_state = 'finish'
+
+    def bypass_ticktock(self):
+        pass # hard to do
