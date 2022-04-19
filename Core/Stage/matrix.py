@@ -5,16 +5,14 @@ from Core.Utils.stall import StallEvent
 
 
 class Matrix(StageBase):
-    def __init__(self,reg_file:RegFile):
+    def __init__(self):
         super(Matrix, self).__init__()
         self.info = None
-
-        self.reg_file = reg_file
 
         self.current_eu = None
 
         self.inner_reg = Register()
-        # self.inner_reg.stalled = False # 这个的时序有点难写
+
         self.inner_reg.busy_cycle = 0
         self.inner_reg.state = 'idle'
 

@@ -7,13 +7,18 @@ from Core.Utils.reg import Register
 from Core.Utils.misc import ExecInfo
 from Core.Utils.stall import StallEvent
 
-RS1_READ = {} # 将rs1所存的数值作为地址的指令
-RS2_READ = {}
+
+# 针对内存而言的，READ指对应寄存器的值是要读取的内存的地址
+RS1_READ = {"vvadd","vvsub","vvmul","vvgtm","vvgt","vveq","vvand","vvor","vvsll","vvsra","vvdmul","vinvt","vrelu","vsigmoid","vtanh","vmv",
+            "send","ld",
+            "gemv"} # 将rs1所存的数值作为地址的指令
+RS2_READ = {"vvadd","vvsub","vvmul","vvgtm","vvgt","vveq","vvand","vvor","vvsll","vvsra","vvdmul","vmv"}
 RD_READ = {}
 
-RS1_WRITE = {}
+RS1_WRITE = {"recv","gvr"}
 RS2_WRITE = {}
-RD_WRITE = {}
+RD_WRITE = {"vvadd","vvsub","vvmul","vvgtm","vvgt","vveq","vvand","vvor","vvsll","vvsra","vvdmul","vinvt","vrandg","vrelu","vsigmoid","vtanh","vmv",
+            "st","sti"}
 
 
 
@@ -130,17 +135,18 @@ class MemQueue(StageBase):
 
     @property
     def state(self):
+        length = self.gen_mem_length()
         if self.stage_data.op in RD_READ:
             start_addr = self.reg_file[self.stage_data.rd]
-            if self.check_overlap(start_addr):
+            if self.is_overlap((start_addr,start_addr+length-1)):
                 return 'busy'
         if self.stage_data.op in RS1_READ:
             start_addr = self.reg_file[self.stage_data.rs1]
-            if self.check_overlap(start_addr):
+            if self.is_overlap((start_addr,start_addr+length-1)):
                 return 'busy'
         if self.stage_data.op in RS2_READ:
             start_addr = self.reg_file[self.stage_data.rs2]
-            if self.check_overlap(start_addr):
+            if self.is_overlap((start_addr,start_addr+length-1)):
                 return 'busy'
 
         return 'idle'

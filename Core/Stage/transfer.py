@@ -9,12 +9,10 @@ from Core.PipeLine.packet import InnerPacket
 class Transfer(StageBase):
     REG_TRANSFER = ['ld','st','sti','ldi']
     CORE_TRANSFER = ['send','recv']
-    def __init__(self,reg_file:RegFile):
+    def __init__(self):
         super(Transfer, self).__init__()
         self.info = None
 
-
-        self.reg_file = reg_file
         self.current_eu = None
 
         self.inner_reg = Register()
@@ -47,7 +45,7 @@ class Transfer(StageBase):
                         pass
                     elif self.stage_data.op == 'recv':
                         dest_id = self.stage_data.imm
-                        data_size = self.reg_file[self.stage_data.rs2]
+                        data_size = self.info.rs2_value
                         tmp_recv_request = InnerPacket(dest_id,data_size,self.recv_callback,'recv')
                         self.gateway.inner_recv_request(tmp_recv_request)
                         self.transfer_state = 'start'
@@ -64,7 +62,7 @@ class Transfer(StageBase):
                         self.inner_reg.transfer_unfinished = True
                         # 向外发出包
                         dest_id = self.stage_data.imm
-                        data_size = self.reg_file[self.stage_data.rs2]
+                        data_size = self.info.rs2_value
                         tmp_send_request = InnerPacket(dest_id,data_size,self.send_callback)
                         self.gateway.inner_send_request(tmp_send_request)
                         self.transfer_state = 'start'

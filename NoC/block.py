@@ -4,9 +4,9 @@ from NoC.base import NoCBase, PendingEvent
 from NoC.packet import DataPacket
 
 
-class BlockNoc(NoCBase):
+class BlockedNoc(NoCBase):
     def __init__(self):
-        super(BlockNoc, self).__init__()
+        super(BlockedNoc, self).__init__()
         pass
 
 

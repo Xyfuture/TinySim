@@ -4,13 +4,10 @@ from Core.Utils.stall import StallEvent
 from Core.Utils.reg import Register
 
 class Vector(StageBase):
-    def __init__(self,reg_file:RegFile):
+    def __init__(self):
         super(Vector, self).__init__()
 
         self.info  = None
-
-
-        self.reg_file = reg_file
 
         self.vvset_length = 0
         self.vvset_bitwidth = 0
@@ -97,12 +94,12 @@ class Vector(StageBase):
 
     def vvset(self):
         if self.stage_data.op == 'vvset':
-            self.vvset_length = self.reg_file[self.stage_data.rd]
+            self.vvset_length = self.info.rd_value
             self.vvset_bitwidth = self.stage_data.bitwidth
 
 
     def bypass_ticktock(self):
         if self.inner_reg.state == 'busy':
             if self.inner_reg.busy_cycle -1 == 0:
-                return (self.info.rd_value,self.info.rd_value+self.info.length-1)
+                return (self.info.rd_value,self.info.rd_value+self.info.length-1) # length 是设置过的
         return None
