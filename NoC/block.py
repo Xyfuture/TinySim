@@ -5,8 +5,8 @@ from NoC.packet import DataPacket
 
 
 class BlockedNoc(NoCBase):
-    def __init__(self):
-        super(BlockedNoc, self).__init__()
+    def __init__(self,mesh_layout):
+        super(BlockedNoc, self).__init__(mesh_layout)
         pass
 
 

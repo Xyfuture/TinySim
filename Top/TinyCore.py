@@ -3,11 +3,13 @@ from typing import List
 from Core.PipeLine.base import PipeLineBase
 from Core.PipeLine.comm import BlockedGateway
 from Core.Stage.base import StageBase
+from Config.config import SimConfig
+
 
 from Core.Stage.fetch import Fetch
 from Core.Stage.decoder import Decoder
 from Core.Stage.issue import Issue
-from Core.Stage.matrix import MatrixGroup
+from Core.Stage.matrix import Matrix
 from Core.Stage.vector import Vector
 from Core.Stage.transfer import Transfer
 from Core.Stage.scalar import Scalar
@@ -18,18 +20,22 @@ from Core.Stage.Storage.regFile import RegFile
 
 
 class TinyCore(PipeLineBase):
-    def __init__(self):
+    def __init__(self,core_id):
         super(TinyCore, self).__init__()
+        self.core_id = core_id
+
         self.reg_file = RegFile()
+        self.config = SimConfig()
+
 
         self.if_stage = Fetch()
         self.id_stage = Decoder()
         self.ri_stage = Issue()
 
         self.mem_queue = MemQueue(self.reg_file)
-        self.meu_stage = MatrixGroup(self.reg_file)
-        self.veu_stage = Vector(self.reg_file)
-        self.dtu_stage = Transfer(self.reg_file)
+        self.meu_stage = Matrix()
+        self.veu_stage = Vector()
+        self.dtu_stage = Transfer()
 
         self.seu_stage = Scalar(self.reg_file)
 

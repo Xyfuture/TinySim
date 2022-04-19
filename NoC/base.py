@@ -44,7 +44,8 @@ class PendingQueue:
 
 
 class NoCBase(metaclass=ABCMeta):
-    def __init__(self):
+    def __init__(self,mesh_layout):
+        self.mesh_layout = mesh_layout
 
         self.gateway_dict = {}
         self.pending_event_dict = {}
@@ -71,6 +72,8 @@ class NoCBase(metaclass=ABCMeta):
             event_list.update()
 
 
-
-
+    def add_gateway(self,gateway):
+        gateway_id = gateway.gateway_id
+        self.gateway_dict[gateway_id] = gateway
+        self.pending_event_dict[gateway_id] = PendingQueue()
 
