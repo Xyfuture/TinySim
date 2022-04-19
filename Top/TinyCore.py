@@ -7,7 +7,7 @@ from Core.Stage.base import StageBase
 from Core.Stage.fetch import Fetch
 from Core.Stage.decoder import Decoder
 from Core.Stage.issue import Issue
-from Core.Stage.matrix import Matrix
+from Core.Stage.matrix import MatrixGroup
 from Core.Stage.vector import Vector
 from Core.Stage.transfer import Transfer
 from Core.Stage.scalar import Scalar
@@ -27,7 +27,7 @@ class TinyCore(PipeLineBase):
         self.ri_stage = Issue()
 
         self.mem_queue = MemQueue(self.reg_file)
-        self.meu_stage = Matrix(self.reg_file)
+        self.meu_stage = MatrixGroup(self.reg_file)
         self.veu_stage = Vector(self.reg_file)
         self.dtu_stage = Transfer(self.reg_file)
 
