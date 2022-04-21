@@ -1,4 +1,5 @@
-
+import copy
+import pickle
 
 from Core.Instruction.isa import OPCODE_MAP_B2S, RE_MAP, BinaryInst,BinaryDump
 
@@ -109,8 +110,12 @@ class InstBuffer:
                 line = line.strip()
 
     def load_dict(self,file_name):
-        pass
-
+        with open(file_name,'rb') as f:
+            dict_list = pickle.load(f)
+        for d in dict_list:
+            tmp = instruction()
+            tmp.read_dict(d)
+            self.inst_list.append(tmp)
 
     def print_asm(self):
         for inst in self.inst_list:
