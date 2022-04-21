@@ -73,7 +73,7 @@ class MatrixGroup(StageBase):
         pass
 
     def set_busy_cycle(self):
-        return  1
+        return  5
 
     def bypass_ticktock(self):
         if self.stage_data.op == 'gvr':

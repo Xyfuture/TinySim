@@ -89,7 +89,7 @@ class Vector(StageBase):
         pass
 
     def set_busy_cycle(self):
-        return 1
+        return 5
 
 
     def vvset(self):

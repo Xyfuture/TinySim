@@ -12,16 +12,12 @@ class Scalar(StageBase):
         self.reg_file = reg_file
         self.current_eu = None
 
-
-
     def ticktock(self):
-        if self.current_eu == 'seu':
-            self.scalar_excute()
-
         self.add_cycle_cnt()
         self.compute_cycle_energy()
 
-
+        if self.current_eu == 'seu':
+            self.scalar_excute()
 
     def update(self):
         self.current_eu = self.recv_data['eu']
@@ -37,7 +33,7 @@ class Scalar(StageBase):
         rd = self.stage_data.rd
         rs1 = self.stage_data.rs1
         rs2 = self.stage_data.rs2
-        imm = self.stage_dataa.imm
+        imm = self.stage_data.imm
         if self.stage_data.op == 'sadd':
             self.reg_file[rd] = self.reg_file[rs1] + self.reg_file[rs2]
         elif self.stage_data.op == 'ssub':

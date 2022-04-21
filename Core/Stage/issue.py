@@ -17,10 +17,11 @@ class Issue(StageBase):
 
 
     def ticktock(self):
-        self.send_data = {'eu':self.eu_dispatch(),'inst':self.stage_data}
-
         self.add_cycle_cnt()
         self.compute_cycle_energy()
+
+        self.send_data = {'eu':self.eu_dispatch(),'inst':self.stage_data}
+
 
     def stall_out(self):
         return None
@@ -32,9 +33,19 @@ class Issue(StageBase):
     def compute_cycle_energy(self):
         pass
 
-
     def eu_dispatch(self):
-        pass
+        if self.stage_data.op[0] == 'v':
+            current_eu = 'veu'
+        elif self.stage_data.op[0] == 's' and self.stage_data.op not in ['send','st','sti']:
+            current_eu = 'seu'
+        elif self.stage_data.op in {'send','recv','ld','st','sti','ldi'}:
+            current_eu = 'dtu'
+        elif self.stage_data.op in {'bind','unbind','gemv','gvr'}:
+            current_eu = 'meu'
+        else:
+            raise "no eu candidate"
+
+        return current_eu
 
 
     def bypass_ticktock(self):

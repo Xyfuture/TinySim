@@ -82,7 +82,8 @@ class MemQueue(StageBase):
                 self.current_eu, self.stage_data = self.recv_data['eu'], self.recv_data['inst']
 
         # 更新写入的信息
-        self.queue_reg.update()
+        if self.check_not_stalled(): # 避免发生重复的写入
+            self.queue_reg.update()
 
 
     def compute_cycle_energy(self):
