@@ -30,10 +30,18 @@ class ChipTop:
                 core_id = i*self.mesh_layout[1] + j
 
                 tmp_core = TinyCore(core_id)
+                tmp_core.build()
+
                 tmp_gateway = BlockedGateway(self.noc_bus,core_id)
 
                 self.noc_bus.add_gateway(tmp_gateway)
                 self.gateway_dict[core_id] = tmp_gateway
                 self.core_dict[core_id] = tmp_core
 
-
+    def load_dict(self,dir_name):
+        for i in range(self.mesh_layout[0]):
+            for j in range(self.mesh_layout[1]):
+                core_id = i* self.mesh_layout[1] + j
+                tmp_file_name = dir_name+"{}.pkl".format(core_id)
+                tmp_core = self.core_dict[core_id]
+                tmp_core.load_dict(tmp_file_name)

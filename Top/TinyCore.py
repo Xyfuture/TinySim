@@ -48,7 +48,7 @@ class TinyCore(PipeLineBase):
         self.seu_stage.connect_to(self.ri_stage)
         self.meu_stage.connect_to(self.ri_stage)
         self.veu_stage.connect_to(self.ri_stage)
-        self.dtu_stage.connect_to(self.dtu_stage)
+        self.dtu_stage.connect_to(self.ri_stage)
 
 
         # 旁路部分
@@ -58,3 +58,7 @@ class TinyCore(PipeLineBase):
         self.veu_stage.bypass_connect_to(self.ri_stage)
 
         return [self.meu_stage,self.veu_stage,self.dtu_stage]
+
+
+    def load_dict(self,file_name):
+        self.if_stage.load_dict(file_name)

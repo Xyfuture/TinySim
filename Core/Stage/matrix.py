@@ -1,7 +1,9 @@
 from collections import OrderedDict
 
+from Core.Instruction.inst import instruction
 from Core.Stage.Storage.regFile import RegFile
 from Core.Stage.base import StageBase
+from Core.Utils.misc import ExecInfo
 from Core.Utils.reg import Register
 from Core.Utils.stall import StallEvent
 
@@ -9,6 +11,9 @@ from Core.Utils.stall import StallEvent
 class MatrixGroup(StageBase):
     def __init__(self,packet_id,meu_num):
         super(MatrixGroup, self).__init__()
+        self.recv_data = ExecInfo(eu='none',inst=instruction())
+
+
         self.packet_id = packet_id
         self.meu_num = meu_num
 
@@ -89,6 +94,8 @@ class MatrixGroup(StageBase):
 class Matrix(StageBase):
     def __init__(self):
         super(Matrix, self).__init__()
+        self.recv_data = ExecInfo(eu='none', inst=instruction())
+
         self.info = None
         self.current_eu = None
 

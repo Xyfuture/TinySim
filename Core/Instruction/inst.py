@@ -21,7 +21,7 @@ class instruction:
 
     BITWIDTH = ['vvset','vvsll','vvsra','bind','gemv']
 
-    def __init__(self,op=''):
+    def __init__(self,op='none'):
         self.rd = 0
         self.rs1 = 0
         self.rs2 = 0
@@ -29,20 +29,20 @@ class instruction:
         self.bitwidth = 0
         self.op = op
 
-        self.binary_inst = BinaryInst()
+        # self.binary_inst = BinaryInst()
 
-    def read_dict(self,inst_dict:dict):
+    def load_dict(self, inst_dict:dict):
         for k,v in inst_dict.items():
             self.__setattr__(k,v)
-        self.binary_inst = BinaryDump(self).get_binary()
+        # self.binary_inst = BinaryDump(self).get_binary()
 
 
-    def read_binary(self,binary_inst):
-        self.binary_inst = binary_inst
-        self.binary_parse()
+    # def read_binary(self,binary_inst):
+    #     self.binary_inst = binary_inst
+    #     self.binary_parse()
 
-    def dump_binary(self):
-        return self.binary_inst.dump()
+    # def dump_binary(self):
+    #     return self.binary_inst.dump()
 
     def dump_asm(self):
         _str = self.op
@@ -78,23 +78,23 @@ class instruction:
         else:
             self.op = tmp_op
 
-    def reg_binary_parse(self):
-        self.rd = int(self.binary_inst[7:12],2)
-        self.rs1 = int(self.binary_inst[12:17],2)
-        self.rs2 = int(self.binary_inst[17:22],2)
-
-    def imm_binary_parse(self):
-        # 仅仅支持 core_id imm 应该就这个还有点用吧
-        self.imm = int(self.binary_inst[22:32],2)
-
-    def bitwidth_binary_parse(self):
-        self.bitwidth = int(self.binary_inst[29:32],2)
-
-    def binary_parse(self):
-        self.opcode_binary_parse()
-        self.reg_binary_parse()
-        self.imm_binary_parse()
-        self.bitwidth_binary_parse()
+    # def reg_binary_parse(self):
+    #     self.rd = int(self.binary_inst[7:12],2)
+    #     self.rs1 = int(self.binary_inst[12:17],2)
+    #     self.rs2 = int(self.binary_inst[17:22],2)
+    #
+    # def imm_binary_parse(self):
+    #     # 仅仅支持 core_id imm 应该就这个还有点用吧
+    #     self.imm = int(self.binary_inst[22:32],2)
+    #
+    # def bitwidth_binary_parse(self):
+    #     self.bitwidth = int(self.binary_inst[29:32],2)
+    #
+    # def binary_parse(self):
+    #     self.opcode_binary_parse()
+    #     self.reg_binary_parse()
+    #     self.imm_binary_parse()
+    #     self.bitwidth_binary_parse()
 
 
 
@@ -104,34 +104,37 @@ class InstBuffer:
         self.size = 0
         self.inst_list = []
 
-    def load_binary(self,file_name):
-        with open(file_name,'r') as f:
-            for line in f.readlines():
-                line = line.strip()
+    # def load_binary(self,file_name):
+    #     with open(file_name,'r') as f:
+    #         for line in f.readlines():
+    #             line = line.strip()
 
     def load_dict(self,file_name):
         with open(file_name,'rb') as f:
             dict_list = pickle.load(f)
         for d in dict_list:
             tmp = instruction()
-            tmp.read_dict(d)
+            tmp.load_dict(d)
             self.inst_list.append(tmp)
 
     def print_asm(self):
         for inst in self.inst_list:
             print(inst.dump_asm())
-
-    def print_binary(self):
-        for inst in self.inst_list:
-            print(inst.dump_binary())
+    #
+    # def print_binary(self):
+    #     for inst in self.inst_list:
+    #         print(inst.dump_binary())
 
     def dump_asm(self):
         for inst in self.inst_list:
             yield inst.dump_asm()
 
-    def dump_binary(self):
-        for inst in self.inst_list:
-            yield inst.dump_binary()
+    def get_inst_count(self):
+        return len(self.inst_list)
+
+    # def dump_binary(self):
+    #     for inst in self.inst_list:
+    #         yield inst.dump_binary()
 
     def __getitem__(self, item):
         return self.inst_list[item]

@@ -18,7 +18,7 @@ class MetaStage(StageBase):
     def stall_out(self):
         pass
 
-    def compute_total_energy(self):
+    def compute_cycle_energy(self):
         return 0
 
     def update(self):

@@ -1,5 +1,4 @@
-
-
+from Core.Instruction.inst import instruction
 from Core.Stage.base import StageBase
 
 
@@ -14,6 +13,7 @@ DTU_INST = []
 class Issue(StageBase):
     def __init__(self):
         super(Issue, self).__init__()
+        self.send_data = {'eu':'none','inst':instruction()}
 
 
     def ticktock(self):
@@ -43,7 +43,8 @@ class Issue(StageBase):
         elif self.stage_data.op in {'bind','unbind','gemv','gvr'}:
             current_eu = 'meu'
         else:
-            raise "no eu candidate"
+            current_eu = 'none'
+            print( "no eu candidate")
 
         return current_eu
 

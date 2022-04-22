@@ -87,10 +87,10 @@ class StageBase(metaclass=ABCMeta):
             self.stall_cycles += 1
 
     def check_stalled(self):
-        return len(self.stall_info_dict) == 0
+        return len(self.stall_info_dict) != 0
 
     def check_not_stalled(self):
-        return not self.check_stalled()
+        return len(self.stall_info_dict) == 0
 
     # 与Core外进行数据传输
     def set_gateway(self,g):

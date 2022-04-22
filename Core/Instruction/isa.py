@@ -1,4 +1,3 @@
-from Core.Instruction.inst import instruction
 
 OPCODE_MAP_B2S ={
  '0010001': 'vvset',
@@ -206,7 +205,7 @@ FUNCT_LIST_MAP = {
 
 
 class BinaryDump:
-    def __init__(self,inst:instruction):
+    def __init__(self,inst):
         self.inst = inst
         self.binary = BinaryInst()
 

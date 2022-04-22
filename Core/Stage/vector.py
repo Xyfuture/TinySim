@@ -1,12 +1,14 @@
+from Core.Instruction.inst import instruction
 from Core.Stage.Storage.regFile import RegFile
 from Core.Stage.base import StageBase
+from Core.Utils.misc import ExecInfo
 from Core.Utils.stall import StallEvent
 from Core.Utils.reg import Register
 
 class Vector(StageBase):
     def __init__(self):
         super(Vector, self).__init__()
-
+        self.recv_data = ExecInfo(eu='none', inst=instruction())
         self.info  = None
 
         self.vvset_length = 0

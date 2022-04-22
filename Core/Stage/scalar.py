@@ -1,6 +1,7 @@
 
 
 # from Core.Stage.Storage.regFile import
+from Core.Instruction.inst import instruction
 from Core.Stage.Storage.regFile import RegFile
 from Core.Stage.base import StageBase
 
@@ -8,6 +9,7 @@ from Core.Stage.base import StageBase
 class Scalar(StageBase):
     def __init__(self,reg_file:RegFile):
         super(Scalar, self).__init__()
+        self.recv_data = {'eu': 'none', 'inst': instruction()}
 
         self.reg_file = reg_file
         self.current_eu = None
