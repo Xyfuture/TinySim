@@ -32,10 +32,10 @@ class TinyCore(PipeLineBase):
         self.id_stage = Decoder()
         self.ri_stage = Issue()
 
-        self.mem_queue = MemQueue(self.reg_file)
-        self.meu_stage = Matrix()
-        self.veu_stage = Vector()
-        self.dtu_stage = Transfer()
+        # self.mem_queue = MemQueue(self.reg_file)
+        # self.meu_stage = Matrix()
+        # self.veu_stage = Vector()
+        # self.dtu_stage = Transfer()
 
         self.seu_stage = Scalar(self.reg_file)
 
@@ -46,19 +46,23 @@ class TinyCore(PipeLineBase):
         self.ri_stage.connect_to(self.id_stage)
 
         self.seu_stage.connect_to(self.ri_stage)
-        self.meu_stage.connect_to(self.ri_stage)
-        self.veu_stage.connect_to(self.ri_stage)
-        self.dtu_stage.connect_to(self.ri_stage)
+        # self.mem_queue.connect_to(self.ri_stage)
+        #
+        # self.meu_stage.connect_to(self.mem_queue)
+        # self.veu_stage.connect_to(self.mem_queue)
+        # self.dtu_stage.connect_to(self.mem_queue)
 
 
         # 旁路部分
-        self.ri_stage.bypass_connect_to(self.meu_stage,self.veu_stage,self.dtu_stage)
-        self.dtu_stage.bypass_connect_to(self.ri_stage)
-        self.meu_stage.bypass_connect_to(self.ri_stage)
-        self.veu_stage.bypass_connect_to(self.ri_stage)
+        # self.mem_queue.bypass_connect_to(self.veu_stage,self.dtu_stage)
+        # self.dtu_stage.bypass_connect_to(self.mem_queue)
+        # # self.meu_stage.bypass_connect_to(self.mem_queue) # 不是这条旁路
+        # self.veu_stage.bypass_connect_to(self.mem_queue)
 
-        return [self.meu_stage,self.veu_stage,self.dtu_stage]
 
+        # return [self.meu_stage,self.veu_stage,self.dtu_stage]
+
+        return [self.seu_stage]
 
     def load_dict(self,file_name):
         self.if_stage.load_dict(file_name)

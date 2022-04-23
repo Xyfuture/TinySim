@@ -12,41 +12,50 @@ class Scalar(StageBase):
         self.recv_data = {'eu': 'none', 'inst': instruction()}
 
         self.reg_file = reg_file
-        self.current_eu = None
+        self.stage_reg.current_eu = 'none'
 
-    def ticktock(self):
+    def set_pos_reg(self):
+        recv_data = self.pre_stage_list[0].send_data
+        self.stage_reg.current_eu,self.stage_reg.stage_data = recv_data['eu'],recv_data['inst']
+
+
+
+    def pos_tick(self):
         self.add_cycle_cnt()
         self.compute_cycle_energy()
 
-        if self.current_eu == 'seu':
+        if self.stage_reg.current_eu == 'seu':
             self.scalar_excute()
 
-    def update(self):
-        self.current_eu = self.recv_data['eu']
-        self.stage_data = self.recv_data['inst']
+    def stall_info(self):
+        pass
 
-    def stall_out(self):
-        return None
+    @property
+    def send_data(self):
+        return 0
 
     def compute_cycle_energy(self):
         pass
 
     def scalar_excute(self):
-        rd = self.stage_data.rd
-        rs1 = self.stage_data.rs1
-        rs2 = self.stage_data.rs2
-        imm = self.stage_data.imm
-        if self.stage_data.op == 'sadd':
+        stage_data = self.stage_reg.stage_data
+        
+        
+        rd = stage_data.rd
+        rs1 = stage_data.rs1
+        rs2 = stage_data.rs2
+        imm = stage_data.imm
+        if stage_data.op == 'sadd':
             self.reg_file[rd] = self.reg_file[rs1] + self.reg_file[rs2]
-        elif self.stage_data.op == 'ssub':
+        elif stage_data.op == 'ssub':
             self.reg_file[rd] = self.reg_file[rs1] - self.reg_file[rs2]
-        elif self.stage_data.op == 'smul':
+        elif stage_data.op == 'smul':
             self.reg_file[rd] = self.reg_file[rs1] * self.reg_file[rs2]
-        elif self.stage_data.op == 'sdiv':
+        elif stage_data.op == 'sdiv':
             self.reg_file[rd] = self.reg_file[rs1] // self.reg_file[rs2]
-        elif self.stage_data.op == 'saddi':
+        elif stage_data.op == 'saddi':
             self.reg_file[rd] = self.reg_file[rs1] + imm
-        elif self.stage_data.op == 'ssubi':
+        elif stage_data.op == 'ssubi':
             self.reg_file[rd] = self.reg_file[rs1] - imm
-        elif self.stage_data.op == 'smuli':
+        elif stage_data.op == 'smuli':
             self.reg_file[rd] = self.reg_file[rs1] * imm

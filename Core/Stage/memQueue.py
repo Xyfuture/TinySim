@@ -25,9 +25,9 @@ RD_WRITE = {"vvadd","vvsub","vvmul","vvgtm","vvgt","vveq","vvand","vvor","vvsll"
 class MemQueue(StageBase):
     def __init__(self,reg_file:RegFile):
         super(MemQueue, self).__init__()
+        self.recv_data = {'eu': 'none', 'inst': instruction()}
 
         # stage_data 仍旧是inst类型的
-
         self.current_eu = 'none'
 
         self.reg_file = reg_file
@@ -43,7 +43,7 @@ class MemQueue(StageBase):
         self.queue_reg.write_queue = []
 
 
-    def ticktock(self):
+    def pos_tick(self):
         self.add_cycle_cnt()
         self.compute_cycle_energy()
 
@@ -55,15 +55,16 @@ class MemQueue(StageBase):
 
         self.queue_reg.update()
 
-    def stall_out(self):
+    def negedge(self):
         self.queue_reg.write_queue = self.write_queue_add()
 
+        # state的判断应该在更新完queue之后，所以放到了这里
         if self.state == 'busy':
             self.send_data = ExecInfo('none',instruction())
         else:
-            rd_value = self.reg_file[self.stage_data.rd_value ]
-            rs1_value = self.reg_file[self.stage_data.rs1_value]
-            rs2_value = self.reg_file[self.stage_data.rs2_value]
+            rd_value = self.reg_file[self.stage_data.rd ]
+            rs1_value = self.reg_file[self.stage_data.rs1]
+            rs2_value = self.reg_file[self.stage_data.rs2]
 
             length = self.gen_mem_length()
             tmp = ExecInfo(self.current_eu, self.stage_data, rd_value, rs1_value, rs2_value,length)
@@ -72,11 +73,11 @@ class MemQueue(StageBase):
 
         if self.state == 'busy':
             return StallEvent("MemoryQueue",True)
-        else :
-            return StallEvent("MemoryQueue",False) # 性能比较差
+        # else :
+        #     return StallEvent("MemoryQueue",False) # 性能比较差
+        return None
 
-
-    def update(self):
+    def posedge(self):
         if self.check_not_stalled():
             if self.state == 'idle':
                 self.current_eu, self.stage_data = self.recv_data['eu'], self.recv_data['inst']
@@ -112,7 +113,7 @@ class MemQueue(StageBase):
 
     def write_queue_remove(self):
         queue = copy.deepcopy(self.queue_reg.write_queue)
-        for stage in self.pre_stage_list:
+        for stage in self.bypass_pre_stage_list:
             bypass_info = stage.bypass_ticktock()
             if bypass_info:
                 queue.remove(bypass_info)

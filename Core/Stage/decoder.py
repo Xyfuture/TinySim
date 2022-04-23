@@ -7,20 +7,22 @@ class Decoder(StageBase):
     def __init__(self):
         super(Decoder, self).__init__()
 
-    def ticktock(self):
+
+    def set_pos_reg(self):
+        self.stage_reg.stage_data = self.pre_stage_list[0].send_data
+
+
+    def pos_tick(self):
         self.compute_cycle_energy()
         self.add_cycle_cnt()
 
-        self.send_data = self.stage_data
+    @property
+    def send_data(self):
+        return self.stage_reg.stage_data
 
+    def stall_info(self):
+        pass
 
-
-    def stall_out(self):
-        return None
-
-    def update(self):
-        if self.check_not_stalled():
-            self.stage_data = self.recv_data
 
     def compute_cycle_energy(self):
         pass

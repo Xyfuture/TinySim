@@ -86,7 +86,7 @@ class Transfer(StageBase):
                             self.inner_reg.busy_cycles = self.inner_reg.busy_cycles -1
                         else:
                             self.inner_reg.state = 'idle'
-    def ticktock(self):
+    def pos_tick(self):
 
         self.compute_cycle_energy()
         self.add_cycle_cnt()
@@ -95,7 +95,7 @@ class Transfer(StageBase):
         self.inner_reg.update()
 
 
-    def update(self):
+    def posedge(self):
         if self.check_not_stalled():
             if self.inner_reg.state =='idle':
                 self.current_eu,self.stage_data = self.recv_data['eu'],self.recv_data['inst']
@@ -103,7 +103,7 @@ class Transfer(StageBase):
 
 
 
-    def stall_out(self):
+    def negedge(self):
         self.stall_event = None
 
         if self.stall_reg.stalled:
@@ -126,7 +126,7 @@ class Transfer(StageBase):
         pass
 
     def set_busy_cycle(self):
-        return 1
+        return 0
 
     def process(self):
         if self.stage_data.op == 'ldi':

@@ -29,7 +29,7 @@ class MatrixGroup(StageBase):
         self.stall_event = None
 
 
-    def ticktock(self):
+    def pos_tick(self):
         self.add_cycle_cnt()
         self.compute_cycle_energy()
 
@@ -50,13 +50,13 @@ class MatrixGroup(StageBase):
         self.inner_reg.update()
 
 
-    def update(self):
+    def posedge(self):
         if self.check_not_stalled():
             if self.inner_reg.state == 'idle':
                 self.current_eu,self.stage_data = self.recv_data['eu'],self.recv_data['inst']
                 self.info = self.recv_data
 
-    def stall_out(self):
+    def negedge(self):
 
         self.stall_event = None
         if self.stall_reg.stalled:
@@ -102,7 +102,7 @@ class Matrix(StageBase):
         self.meu_dict = OrderedDict()
 
 
-    def ticktock(self):
+    def pos_tick(self):
         # 这里创建meu，解析一下bind指令
         if self.stage_data.op == 'bind':
             packet_id = self.info.rd_value
@@ -111,19 +111,20 @@ class Matrix(StageBase):
             self.meu_dict[packet_id] = tmp_meu
             for stage in self.pre_stage_list:
                 tmp_meu.connect_to(stage)
+
                 tmp_meu.bypass_connect_to(stage)
                 stage.bypass_connect_to(tmp_meu)
 
             for stage in self.post_stage_list:
                 stage.connect_to(tmp_meu)
 
-    def update(self):
+    def posedge(self):
         self.info = self.recv_data
         self.current_eu,self.stage_data = self.recv_data['eu'],self.recv_data['inst']
 
 
 
-    def stall_out(self):
+    def negedge(self):
         # 理论上来所，应该只有一个部件能够发出stall,一个发出后另一个就不能发出了
         # for k,v in self.meu_dict.items():
         #     stall_event = v.stall_out()
@@ -138,4 +139,4 @@ class Matrix(StageBase):
         return 0
 
     def bypass_ticktock(self):
-        pass
+        return None

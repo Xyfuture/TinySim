@@ -10,8 +10,19 @@ from Core.Stage.base import StageBase
 
 class PipeLineBase(metaclass=ABCMeta):
     def __init__(self):
+        self._stages = OrderedDict()
+
         self.head_stage = MetaStage()
         self.tail_stage = MetaStage()
+
+        # self.build()
+
+    def __setattr__(self, key, value):
+        if isinstance(value,StageBase):
+            self._stages[key] = value
+
+        super(PipeLineBase, self).__setattr__(key,value)
+
 
 
     @abstractmethod
@@ -24,94 +35,38 @@ class PipeLineBase(metaclass=ABCMeta):
         ret = self.structure(self.head_stage)
         self.tail_stage.connect_to(*ret)
 
+    def set_pos_reg(self):
+        for k,stage in self._stages.items():
+            stage.set_pos_reg()
 
-    def ticktock_forward(self):
-        Q = queue.Queue()
-        Q.put(self.head_stage)
-        visited =  [self.head_stage] # 因为stage类不一定支持hash功能，所以牺牲一些性能，使用list
-        while not Q.empty():
-            cur_stage = Q.get()
-            cur_stage.ticktock()
+    def posedge(self):
+        for k,stage in self._stages.items():
+            stage.posedge()
 
-            for stage in cur_stage.post_stage_list:
-                if stage not in visited:
-                    visited.append(stage)
-                    Q.put(stage)
+    def pos_tick(self):
+        for k,stage in self._stages.items():
+            stage.pos_tick()
 
+    def set_neg_reg(self):
+        for k,stage in self._stages.items():
+            stage.set_neg_reg()
 
-    def stall_event_backward(self, stall_stage:StageBase, event):
-        Q = queue.Queue()
-        visited = []
-        # stage本身不需要stall
-        for stage in stall_stage.pre_stage_list:
-            Q.put(stage)
-            visited.append(stage)
+    def negedge(self):
+        for k,stage in self._stages.items():
+            stage.negedge()
 
-        # 采取BFS的方式向前传递event信息
-        while not Q.empty():
-            cur_stage = Q.get()
-            cur_stage.stall_in(event)
-
-            for stage in cur_stage.pre_stage_list:
-                if stage not in visited:
-                    visited.append(stage)
-                    Q.put(stage)
-
-    def stall_forward(self):
-        Q = queue.Queue()
-        Q.put(self.head_stage)
-        visited = [self.head_stage]
-        while not Q.empty():
-            cur_stage = Q.get()
-            ret = cur_stage.stall_out()
-
-            # 如果有需要向外发送的stall信息
-            if ret:
-                self.stall_event_backward(cur_stage,ret)
-
-            for stage in cur_stage.post_stage_list:
-                if stage not in visited:
-                    visited.append(stage)
-                    Q.put(stage)
-
-
-
-    def transfer_forward(self):
-        Q = queue.Queue()
-        Q.put(self.head_stage)
-        visited = [self.head_stage]
-        while not Q.empty():
-            cur_stage = Q.get()
-            tmp_data = cur_stage.send()
-            for stage in cur_stage.post_stage_list:
-                stage.recv(tmp_data)
-                if stage not in visited:
-                    visited.append(stage)
-                    Q.put(stage)
-
-
-    def update_forward(self):
-        Q = queue.Queue()
-        Q.put(self.head_stage)
-        visited = [self.head_stage]
-
-        while not Q.empty():
-            cur_stage = Q.get()
-            cur_stage.update()
-
-            for stage in cur_stage.post_stage_list:
-                if stage not in visited:
-                    visited.append(stage)
-                    Q.put(stage)
-
+    def neg_tick(self):
+        for k,stage in self._stages.items():
+            stage.neg_tick()
 
     def forward_one_cycle(self):
-        self.update_forward()
-        self.ticktock_forward()
-        self.stall_forward()
-        self.transfer_forward()
+        self.set_pos_reg()
+        self.posedge()
+        self.pos_tick()
 
-
+        self.set_neg_reg()
+        self.negedge()
+        self.neg_tick()
 
 
 
