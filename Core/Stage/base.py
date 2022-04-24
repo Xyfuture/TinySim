@@ -127,7 +127,10 @@ class StageBase(metaclass=ABCMeta):
             self.bypass_pre_stage_list.append(stage)
             # 这个不维持完整的连接了，只保证后面的可以连接到前面的。
 
-    # uncertain
+
     def set_stall_engine(self,engine):
         self.stall_engine = engine
+        engine.enroll(self)
+
+    def print_info(self):
         pass

@@ -25,78 +25,99 @@ RD_WRITE = {"vvadd","vvsub","vvmul","vvgtm","vvgt","vveq","vvand","vvor","vvsll"
 class MemQueue(StageBase):
     def __init__(self,reg_file:RegFile):
         super(MemQueue, self).__init__()
-        self.recv_data = {'eu': 'none', 'inst': instruction()}
+        self.level = 4
 
         # stage_data 仍旧是inst类型的
-        self.current_eu = 'none'
+        self.stage_reg.current_eu = 'none'
 
         self.reg_file = reg_file
-        # self.write_queue = [] # 全部使用闭区间
 
-        self.vvset_length = 0
-        self.vvset_bitwidth = 0
+        self.vvset_reg = Register('neg')
+        self.vvset_reg.vvset_length = 0
+        self.vvset_reg.vvset_bitwidth = 0
 
-        # self.inner_reg = Register()
-        # self.inner_reg.state = 'idle'
 
         self.queue_reg = Register()
         self.queue_reg.write_queue = []
 
+        self.pre_reg = Register('neg')
+        self.pre_reg.pre_interval = None
+
+    def set_pos_reg(self):
+        if self.state == 'idle':
+            if self.stall_engine.check_not_stall(self.level):
+                tmp = self.pre_stage_list[0].send_data
+                self.stage_reg.current_eu,self.stage_reg.stage_data = tmp['eu'],tmp['inst']
+
+            queue = copy.deepcopy(self.queue_reg.write_queue)
+            for stage in self.bypass_pre_stage_list:
+                finish_interval = stage.finish_interval
+                if finish_interval:
+                    queue.remove(finish_interval)
+            if self.pre_reg.pre_interval:
+                queue.append(self.pre_reg.pre_interval)
+            self.queue_reg.write_queue = queue
+
+
+        elif self.state == 'busy':
+            queue = copy.deepcopy(self.queue_reg.write_queue)
+            for stage in self.bypass_pre_stage_list:
+                finish_interval = stage.finish_interval
+                if finish_interval:
+                    queue.remove(finish_interval)
+            # 不需要添加上一条指令的
+            self.queue_reg.write_queue = queue
 
     def pos_tick(self):
         self.add_cycle_cnt()
         self.compute_cycle_energy()
 
-        if self.stage_data.op == 'vvset':
-            self.vvset()
 
 
-        self.queue_reg.write_queue = self.write_queue_remove()
 
-        self.queue_reg.update()
+    def set_neg_reg(self):
+        self.vvset()
 
-    def negedge(self):
-        self.queue_reg.write_queue = self.write_queue_add()
+        length = self.gen_mem_length()
+        start_addr = self.gen_mem_start_addr()
 
-        # state的判断应该在更新完queue之后，所以放到了这里
-        if self.state == 'busy':
-            self.send_data = ExecInfo('none',instruction())
+        if start_addr:
+            interval = (start_addr,start_addr+length-1)
+            self.pre_reg.pre_interval = interval
         else:
-            rd_value = self.reg_file[self.stage_data.rd ]
-            rs1_value = self.reg_file[self.stage_data.rs1]
-            rs2_value = self.reg_file[self.stage_data.rs2]
+            self.pre_reg.pre_interval = None
+
+    @property
+    def send_data(self):
+        if self.state == 'busy':
+            tmp = ExecInfo('none',instruction())
+            return tmp
+        elif self.state == 'idle':
+            inst = self.stage_reg.stage_data
+            rd_value = self.reg_file[inst.rd ]
+            rs1_value = self.reg_file[inst.rs1]
+            rs2_value = self.reg_file[inst.rs2]
 
             length = self.gen_mem_length()
-            tmp = ExecInfo(self.current_eu, self.stage_data, rd_value, rs1_value, rs2_value,length)
-            self.send_data = tmp
-
-
-        if self.state == 'busy':
-            return StallEvent("MemoryQueue",True)
-        # else :
-        #     return StallEvent("MemoryQueue",False) # 性能比较差
+            start_addr = self.gen_mem_start_addr()
+            tmp = ExecInfo(self.stage_reg.current_eu, inst, rd_value, rs1_value, rs2_value,length,start_addr)
+            return tmp
         return None
 
-    def posedge(self):
-        if self.check_not_stalled():
-            if self.state == 'idle':
-                self.current_eu, self.stage_data = self.recv_data['eu'], self.recv_data['inst']
-
-        # 更新写入的信息
-        if self.check_not_stalled(): # 避免发生重复的写入
-            self.queue_reg.update()
-
+    def stall_info(self):
+        if self.state == 'busy':
+            info = self.pre_stage_list[0].send_data
+            if info['eu'] in ['veu','meu','dtu']:
+                return StallEvent("MemoryQueue",self.level)
+        return None
 
     def compute_cycle_energy(self):
         pass
 
-    def bypass_ticktock(self):
-        # 鉴于这里的bypass 都是后面的部件，所以前面的部件已经计算完了，所以直接传send_data
-        return self.send_data
-
     def vvset(self):
-        self.vvset_bitwidth = self.stage_data.bitwidth
-        self.vvset_length =self.reg_file[self.stage_data.rd]
+        if self.stage_reg.stage_data.op == 'vvset':
+            self.vvset_reg.vvset_bitwidth = self.stage_reg.stage_data.bitwidth
+            self.vvset_reg.vvset_length =self.reg_file[self.stage_reg.stage_data.rd]
 
     def is_overlap(self,interval):
         # 闭区间下操作
@@ -111,61 +132,56 @@ class MemQueue(StageBase):
         length = self.gen_mem_length()
         return self.is_overlap((start_addr,start_addr+length-1))
 
-    def write_queue_remove(self):
-        queue = copy.deepcopy(self.queue_reg.write_queue)
-        for stage in self.bypass_pre_stage_list:
-            bypass_info = stage.bypass_ticktock()
-            if bypass_info:
-                queue.remove(bypass_info)
-        return queue
-
-    def write_queue_add(self):
-        queue = copy.deepcopy(self.queue_reg.write_queue)
-
-        length = self.gen_mem_length()
-        if self.stage_data.op in RS1_WRITE:
-            start_addr = self.reg_file[self.stage_data.rs1]
-            queue.append((start_addr,start_addr+length-1))
-        if self.stage_data.op in RS2_WRITE:
-            start_addr = self.reg_file[self.stage_data.rs2]
-            queue.append((start_addr,start_addr+length-1))
-        if self.stage_data.op in RD_WRITE:
-            start_addr = self.reg_file[self.stage_data.rd]
-            queue.append((start_addr, start_addr + length - 1))
-
-        return queue
-
     @property
     def state(self):
         length = self.gen_mem_length()
-        if self.stage_data.op in RD_READ:
-            start_addr = self.reg_file[self.stage_data.rd]
+        inst = self.stage_reg.stage_data
+        if inst.op in RD_READ:
+            start_addr = self.reg_file[inst.rd]
             if self.is_overlap((start_addr,start_addr+length-1)):
                 return 'busy'
-        if self.stage_data.op in RS1_READ:
-            start_addr = self.reg_file[self.stage_data.rs1]
+        if inst.op in RS1_READ:
+            start_addr = self.reg_file[inst.rs1]
             if self.is_overlap((start_addr,start_addr+length-1)):
                 return 'busy'
-        if self.stage_data.op in RS2_READ:
-            start_addr = self.reg_file[self.stage_data.rs2]
+        if inst.op in RS2_READ:
+            start_addr = self.reg_file[inst.rs2]
             if self.is_overlap((start_addr,start_addr+length-1)):
                 return 'busy'
 
         return 'idle'
 
-
     def gen_mem_length(self):
-        if self.stage_data.op[0] == 'v':
-            bitwidth = self.vvset_bitwidth
-            if self.stage_data.op in ['vvsll','vvsrl']:
-                bitwidth = self.stage_data.bitwidth
-            return bitwidth*self.vvset_length
-        elif self.stage_data.op in ['send','recv','st']:
-            return self.reg_file[self.stage_data.rs2]
-        elif self.stage_data.op in ['gemv','gvr']:
-            if self.stage_data.op == 'gemv':
-                return self.stage_data.bitwidth * self.reg_file[self.stage_data.rs2]
-            if self.stage_data.op == 'gvr':
-                return self.reg_file[self.stage_data.rs2] * 4 # 4byte
+        inst = self.stage_reg.stage_data
+
+        if inst.op[0] == 'v':
+            bitwidth = self.vvset_reg.vvset_bitwidth
+            if inst.op in ['vvsll','vvsrl']:
+                bitwidth = inst.bitwidth
+            return bitwidth*self.vvset_reg.vvset_length
+        elif inst.op in ['send','recv','st']:
+            return self.reg_file[inst.rs2]
+        elif inst.op in ['gemv','gvr']:
+            if inst.op == 'gemv':
+                return inst.bitwidth * self.reg_file[inst.rs2]
+            if inst.op == 'gvr':
+                return self.reg_file[inst.rs2] * 4 # 4byte
 
         return 1
+
+    def gen_mem_start_addr(self):
+        inst = self.stage_reg.stage_data
+        start_addr = None
+        if inst in RS1_WRITE:
+            start_addr = self.reg_file[inst.rs1]
+        if inst in RS2_WRITE:
+            start_addr = self.reg_file[inst.rs2]
+        if inst in RD_WRITE:
+            start_addr = self.reg_file[inst.rd]
+
+        return start_addr
+
+    def print_info(self):
+        print('MemQueue:\n'
+              'inst:{}\n'
+              'stall:{}\n'.format(self.stage_reg.stage_data.op,self.stall_engine.check_stall(self.level)))

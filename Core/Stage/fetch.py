@@ -8,6 +8,7 @@ from Core.Utils.reg import Register
 class Fetch(StageBase):
     def __init__(self):
         super(Fetch, self).__init__()
+        self.level = 1
 
         self.inst_buffer = InstBuffer()
         self.inst_count = 0
@@ -17,7 +18,8 @@ class Fetch(StageBase):
 
 
     def set_pos_reg(self):
-        self.inner_reg.pc = self.inner_reg.pc+1
+        if self.stall_engine.check_not_stall(self.level):
+            self.inner_reg.pc = self.inner_reg.pc+1
 
     def pos_tick(self):
         self.add_cycle_cnt()
@@ -36,7 +38,7 @@ class Fetch(StageBase):
             return instruction()
 
     def stall_info(self):
-        pass
+        return None
 
     def compute_cycle_energy(self):
         pass
@@ -45,3 +47,8 @@ class Fetch(StageBase):
     def load_dict(self,file_name):
         self.inst_buffer.load_dict(file_name)
         self.inst_count = self.inst_buffer.get_inst_count()
+
+    def print_info(self):
+        print('Fetch:\n'
+              'inst:{}\n'
+              'stall:{}\n'.format(self.stage_reg.stage_data.op,self.stall_engine.check_stall(self.level)))

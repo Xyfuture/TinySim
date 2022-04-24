@@ -14,21 +14,22 @@ class Issue(StageBase):
     def __init__(self):
         super(Issue, self).__init__()
         # self.send_data = {'eu':'none','inst':instruction()}
+        self.level = 3
 
     def set_pos_reg(self):
-        self.stage_reg.stage_data = self.pre_stage_list[0].send_data
-        print(self.stage_reg.stage_data.op)
-
-    @property
-    def send_data(self):
-        return {'eu':self.eu_dispatch(),'inst':self.stage_reg.stage_data}
+        if self.stall_engine.check_not_stall(self.level):
+            self.stage_reg.stage_data = self.pre_stage_list[0].send_data
 
     def pos_tick(self):
         self.add_cycle_cnt()
         self.compute_cycle_energy()
 
+    @property
+    def send_data(self):
+        return {'eu':self.eu_dispatch(),'inst':self.stage_reg.stage_data}
+
     def stall_info(self):
-        pass
+        return None
 
     def compute_cycle_energy(self):
         pass
@@ -45,10 +46,12 @@ class Issue(StageBase):
             current_eu = 'meu'
         else:
             current_eu = 'none'
-            print( "no eu candidate")
+            # print( "no eu candidate")
 
         return current_eu
 
 
-    def bypass_ticktock(self):
-        return {'eu':self.eu_dispatch(),'inst':self.stage_data}
+    def print_info(self):
+        print('Issue:\n'
+              'inst:{}\n'
+              'stall:{}\n'.format(self.stage_reg.stage_data.op,self.stall_engine.check_stall(self.level)))

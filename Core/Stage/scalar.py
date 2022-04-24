@@ -9,7 +9,7 @@ from Core.Stage.base import StageBase
 class Scalar(StageBase):
     def __init__(self,reg_file:RegFile):
         super(Scalar, self).__init__()
-        self.recv_data = {'eu': 'none', 'inst': instruction()}
+        self.level = 5
 
         self.reg_file = reg_file
         self.stage_reg.current_eu = 'none'
@@ -28,7 +28,7 @@ class Scalar(StageBase):
             self.scalar_excute()
 
     def stall_info(self):
-        pass
+        return None
 
     @property
     def send_data(self):
@@ -59,3 +59,9 @@ class Scalar(StageBase):
             self.reg_file[rd] = self.reg_file[rs1] - imm
         elif stage_data.op == 'smuli':
             self.reg_file[rd] = self.reg_file[rs1] * imm
+
+
+    def print_info(self):
+        print('Scalar:\n'
+              'inst:{}\n'
+              'stall:{}\n'.format(self.stage_reg.stage_data.op, self.stall_engine.check_stall(self.level)))

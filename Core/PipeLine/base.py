@@ -68,5 +68,8 @@ class PipeLineBase(metaclass=ABCMeta):
         self.negedge()
         self.neg_tick()
 
+    def print_info(self):
+        for k,stage in self._stages.items():
+            stage.print_info()
 
 
