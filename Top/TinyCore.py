@@ -36,7 +36,7 @@ class TinyCore(PipeLineBase):
         self.mem_queue = MemQueue(self.reg_file)
         self.meu_stage = Matrix(self)
         self.veu_stage = Vector()
-        # self.dtu_stage = Transfer()
+        self.dtu_stage = Transfer()
 
         self.seu_stage = Scalar(self.reg_file)
 
@@ -57,7 +57,7 @@ class TinyCore(PipeLineBase):
         #
         self.meu_stage.connect_to(self.mem_queue)
         self.veu_stage.connect_to(self.mem_queue)
-        # self.dtu_stage.connect_to(self.mem_queue)
+        self.dtu_stage.connect_to(self.mem_queue)
 
 
         # 旁路部分
@@ -79,3 +79,5 @@ class TinyCore(PipeLineBase):
         self.stall_engine.update()
         self.print_info()
 
+    def set_gateway(self,gateway):
+        self.dtu_stage.set_gateway(gateway)

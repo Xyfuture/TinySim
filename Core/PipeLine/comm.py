@@ -10,6 +10,8 @@ class GatewayBase(metaclass=ABCMeta):
         self.bus = bus
         self.gateway_id = gateway_id
 
+        self.transfer_state = 'idle'
+
     # 内部想要发送什么数据
     @abstractmethod
     def inner_send_request(self,request):
@@ -72,6 +74,7 @@ class BlockedGateway(GatewayBase):
 
         # 检测是否能直接发送，不能的话就直接跳出，等到收到ready再说
         self.inner_check_ready_send()
+        self.transfer_state = 'start'
 
     def inner_check_ready_send(self):
         request = self.wait_send_packet
@@ -90,6 +93,7 @@ class BlockedGateway(GatewayBase):
 
         tmp_ready_packet = DataPacket(self.gateway_id,request.dest_id,-1,"ready")
         self.outer_send_request(tmp_ready_packet)
+        self.transfer_state = 'start'
 
 
     def outer_send_request(self,packet=None):
@@ -110,6 +114,7 @@ class BlockedGateway(GatewayBase):
             self.wait_recv_packet.call_back()
             self.wait_recv_packet = None # 完成接收
 
+            self.transfer_state = 'finish'
         elif packet.payload == 'ready':
             self.dest_ready[packet.source_id] = True
             self.inner_check_ready_send()
@@ -120,6 +125,11 @@ class BlockedGateway(GatewayBase):
             assert self.wait_send_packet
             self.wait_send_packet.call_back()
             self.wait_send_packet = None
+
+            self.transfer_state = 'finish'
         elif packet.payload == 'ready':
             assert self.wait_recv_packet
             # 只有设置类wait_recv_packet之后才能发ready
+
+    def set_idle(self):
+        self.transfer_state = 'idle'

@@ -5,7 +5,7 @@ from Core.Stage.Storage.regFile import RegFile
 from Core.Stage.base import StageBase
 from Core.Utils.reg import Register
 from Core.Utils.misc import ExecInfo
-from Core.Utils.stall import StallEvent
+from Core.Stage.stall import StallEvent
 
 
 # 针对内存而言的，READ指对应寄存器的值是要读取的内存的地址

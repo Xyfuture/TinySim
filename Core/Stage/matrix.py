@@ -163,4 +163,4 @@ class Matrix(StageBase):
     def print_info(self):
         print('Matrix:\n'
               'inst:{}\n'
-              'stall:{}\n'.format(self.stage_reg.stage_data.op,self.stall_engine.check_stall(self.level)))
+              'stall:{}\n'.format(self.stage_reg.stage_data.dump_asm(),self.stall_engine.check_stall(self.level)))

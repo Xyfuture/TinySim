@@ -38,6 +38,8 @@ class ChipTop:
                 self.gateway_dict[core_id] = tmp_gateway
                 self.core_dict[core_id] = tmp_core
 
+                tmp_core.set_gateway(tmp_gateway)
+
     def load_dict(self,dir_name):
         for i in range(self.mesh_layout[0]):
             for j in range(self.mesh_layout[1]):
