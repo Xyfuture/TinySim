@@ -91,7 +91,9 @@ class Vector(StageBase):
     def set_busy_cycle(self):
         if self.stage_reg.stage_data.op == 'none':
             return 0
-        return 5
+        if self.stage_reg.stage_data.op == 'vvset':
+            return 0
+        return 2
 
     def vvset(self):
         if self.stage_reg.stage_data.op == 'vvset':

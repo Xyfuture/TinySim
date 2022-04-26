@@ -27,9 +27,6 @@ class Transfer(StageBase):
         # self.stall_reg = Register()
         # self.stall_reg.stalled = False
 
-
-
-
     # def _ticktock(self):
     #     if self.inner_reg.state == 'idle':
     #         if self.current_eu == 'dtu':

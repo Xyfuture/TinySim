@@ -47,7 +47,8 @@ class MatrixGroup(StageBase):
         if self.state == 'busy':
             self.inner_reg.busy_cycle = self.inner_reg.busy_cycle -1
         elif self.state == 'idle':
-            if self.stage_reg.current_eu == 'meu':
+            cur_packet_id = self.stage_reg.info.rd_value
+            if self.stage_reg.current_eu == 'meu' and cur_packet_id == self.packet_id:
                 self.inner_reg.busy_cycle = self.set_busy_cycle()
 
 
@@ -68,7 +69,8 @@ class MatrixGroup(StageBase):
         interval = None
 
         # if self.stage_reg.finish:
-        if self.stage_reg.current_eu == 'meu' and self.state == 'idle':
+        cur_packet_id = self.stage_reg.info.rd_value
+        if self.stage_reg.current_eu == 'meu' and self.state == 'idle' and cur_packet_id == self.packet_id:
             start_addr = self.stage_reg.info.write_start_addr
             length = self.stage_reg.info.length
 
@@ -90,6 +92,8 @@ class MatrixGroup(StageBase):
 
     def set_busy_cycle(self):
         if self.stage_reg.stage_data.op == 'none':
+            return 0
+        if self.stage_reg.stage_data.op == 'gemv':
             return 0
         return 5
 

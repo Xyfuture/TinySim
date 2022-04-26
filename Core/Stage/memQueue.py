@@ -79,7 +79,7 @@ class MemQueue(StageBase):
         self.vvset()
 
         length = self.gen_mem_length()
-        start_addr = self.gen_mem_start_addr()
+        start_addr = self.gen_mem_write_start_addr()
 
         if start_addr:
             interval = (start_addr,start_addr+length-1)
@@ -99,7 +99,7 @@ class MemQueue(StageBase):
             rs2_value = self.reg_file[inst.rs2]
 
             length = self.gen_mem_length()
-            start_addr = self.gen_mem_start_addr()
+            start_addr = self.gen_mem_write_start_addr()
             tmp = ExecInfo(self.stage_reg.current_eu, inst, rd_value, rs1_value, rs2_value,length,start_addr)
             return tmp
         return None
@@ -169,19 +169,19 @@ class MemQueue(StageBase):
 
         return 1
 
-    def gen_mem_start_addr(self):
+    def gen_mem_write_start_addr(self):
         inst = self.stage_reg.stage_data
         start_addr = None
-        if inst in RS1_WRITE:
+        if inst.op in RS1_WRITE:
             start_addr = self.reg_file[inst.rs1]
-        if inst in RS2_WRITE:
+        if inst.op in RS2_WRITE:
             start_addr = self.reg_file[inst.rs2]
-        if inst in RD_WRITE:
+        if inst.op in RD_WRITE:
             start_addr = self.reg_file[inst.rd]
 
         return start_addr
 
-    def print_info(self):
-        print('MemQueue:\n'
+    def dump_info(self):
+        return ('MemQueue:\n'
               'inst:{}\n'
-              'stall:{}\n'.format(self.stage_reg.stage_data.op,self.stall_engine.check_stall(self.level)))
+              'stall:{}\n'.format(self.stage_reg.stage_data.dump_asm(),self.stall_engine.check_stall(self.level)))
