@@ -132,5 +132,9 @@ class StageBase(metaclass=ABCMeta):
         self.stall_engine = engine
         engine.enroll(self)
 
-    def print_info(self):
+    def dump_info(self):
         pass
+
+    def print_info(self):
+        if self.dump_info():
+            print(self.dump_info())

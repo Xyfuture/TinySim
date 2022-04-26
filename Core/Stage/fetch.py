@@ -48,7 +48,7 @@ class Fetch(StageBase):
         self.inst_buffer.load_dict(file_name)
         self.inst_count = self.inst_buffer.get_inst_count()
 
-    def print_info(self):
-        print('Fetch:\n'
+    def dump_info(self):
+        return ('Fetch:\n'
               'inst:{}\n'
               'stall:{}\n'.format(self.stage_reg.stage_data.dump_asm(),self.stall_engine.check_stall(self.level)))

@@ -22,7 +22,7 @@ class MatrixGroup(StageBase):
         self.inner_reg = Register('neg')
         self.inner_reg.busy_cycle = 0
 
-        self.stage_reg.finish = 0
+        # self.stage_reg.finish = 0
 
 
     def set_pos_reg(self):
@@ -31,21 +31,17 @@ class MatrixGroup(StageBase):
             self.stage_reg.info = tmp
             self.stage_reg.current_eu,self.stage_reg.stage_data = tmp['eu'],tmp['inst']
 
-        if self.inner_reg.busy_cycle == 1:
-            self.stage_reg.finish = 1
-        else:
-            self.stage_reg.finish = 0
+        # if self.inner_reg.busy_cycle == 1:
+        #     self.stage_reg.finish = 1
+        # else:
+        #     self.stage_reg.finish = 0
 
 
     def pos_tick(self):
         self.add_cycle_cnt()
         self.compute_cycle_energy()
 
-        print('MatrixGroup:\n'
-              'inst:{}\n'
-              'stall:{}\n'
-              'busy_cycle:{}\n'.format(self.stage_reg.stage_data.dump_asm(), self.stall_engine.check_stall(self.level),
-                                       self.inner_reg.busy_cycle))
+
 
     def set_neg_reg(self):
         if self.state == 'busy':
@@ -71,7 +67,8 @@ class MatrixGroup(StageBase):
     def finish_interval(self):
         interval = None
 
-        if self.stage_reg.finish:
+        # if self.stage_reg.finish:
+        if self.stage_reg.current_eu == 'meu' and self.state == 'idle':
             start_addr = self.stage_reg.info.write_start_addr
             length = self.stage_reg.info.length
 
@@ -97,8 +94,8 @@ class MatrixGroup(StageBase):
         return 5
 
 
-    def print_info(self):
-        print('MatrixGroup_packet_id_{}:\n'
+    def dump_info(self):
+        return ('MatrixGroup_packet_id_{}:\n'
               'inst:{}\n'
               'stall:{}\n'
               'busy_cycle:{}\n'.format(self.packet_id,self.stage_reg.stage_data.op,self.stall_engine.check_stall(self.level),self.inner_reg.busy_cycle))
@@ -130,7 +127,7 @@ class Matrix(StageBase):
         # 这里创建meu，解析一下bind指令
         if self.stage_reg.stage_data.op == 'bind':
             packet_id = self.stage_reg.info.rd_value
-            num = self.stage_reg.info.imm
+            num = self.stage_reg.stage_data.imm
 
             tmp_meu = MatrixGroup(packet_id, num)
             tmp_meu.set_stall_engine(self.stall_engine)
@@ -160,7 +157,7 @@ class Matrix(StageBase):
     def compute_total_energy(self):
         return 0
 
-    def print_info(self):
-        print('Matrix:\n'
+    def dump_info(self):
+        return ('Matrix:\n'
               'inst:{}\n'
               'stall:{}\n'.format(self.stage_reg.stage_data.dump_asm(),self.stall_engine.check_stall(self.level)))

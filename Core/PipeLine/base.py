@@ -44,7 +44,10 @@ class PipeLineBase(metaclass=ABCMeta):
             stage.posedge()
 
     def pos_tick(self):
-        for k,stage in self._stages.items():
+        # 支持向dict里面动态添加
+        for k in list(self._stages.keys()):
+            stage = self._stages[k]
+        # for k,stage in self._stages.items():
             stage.pos_tick()
 
     def set_neg_reg(self):

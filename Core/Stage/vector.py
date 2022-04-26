@@ -23,7 +23,7 @@ class Vector(StageBase):
         self.inner_reg = Register('neg')
         self.inner_reg.busy_cycle = 0
 
-        self.stage_reg.finish = 0
+        # self.stage_reg.finish = 0 # 使用这个要保证busy_cycle必须时间大于1，至少执行两个周期
 
     # 目前没有考虑stall的情况
     def set_pos_reg(self):
@@ -32,10 +32,10 @@ class Vector(StageBase):
             self.stage_reg.info = tmp
             self.stage_reg.current_eu,self.stage_reg.stage_data = tmp['eu'],tmp['inst']
 
-        if self.inner_reg.busy_cycle == 1:
-            self.stage_reg.finish = 1
-        else:
-            self.stage_reg.finish = 0
+        # if self.inner_reg.busy_cycle == 1:
+        #     self.stage_reg.finish = 1
+        # else:
+        #     self.stage_reg.finish = 0
 
     def pos_tick(self):
         self.add_cycle_cnt()
@@ -65,7 +65,9 @@ class Vector(StageBase):
     def finish_interval(self):
         interval = None
 
-        if self.stage_reg.finish:
+        # mem Queue 在上升沿更新，因此使用state即可知道指令是否执行结束
+
+        if self.stage_reg.current_eu == 'veu' and self.state == 'idle':
             start_addr = self.stage_reg.info.write_start_addr
             length = self.stage_reg.info.length
 
@@ -97,8 +99,8 @@ class Vector(StageBase):
             self.vvset_reg.vvset_bitwidth = self.stage_reg.stage_data.bitwidth
 
 
-    def print_info(self):
-        print('Vector:\n'
+    def dump_info(self):
+        return ('Vector:\n'
               'inst:{}\n'
               'stall:{}\n'
               'busy_cycle:{}\n'.format(self.stage_reg.stage_data.dump_asm(),self.stall_engine.check_stall(self.level),self.inner_reg.busy_cycle))

@@ -77,7 +77,7 @@ class TinyCore(PipeLineBase):
     def forward_one_cycle(self):
         super(TinyCore, self).forward_one_cycle()
         self.stall_engine.update()
-        self.print_info()
+        # self.print_info()
 
     def set_gateway(self,gateway):
         self.dtu_stage.set_gateway(gateway)

@@ -211,7 +211,7 @@ class Transfer(StageBase):
         pass
 
     def set_busy_cycle(self):
-        return 0
+        return 5
 
 
     def send_callback(self):
@@ -238,6 +238,8 @@ class Transfer(StageBase):
 
 
 
+
+
     def pos_tick(self):
         inst = self.stage_reg.stage_data
         info = self.stage_reg.info
@@ -250,7 +252,7 @@ class Transfer(StageBase):
 
         elif self.state == 'busy':
             if self.stage_reg.stage_data.op == 'send':
-                if self.inner_reg.busy_cycle == 1:
+                if self.inner_reg.busy_cycle == 0 and self.transfer_state == 'idle':
                     dest_id = inst.imm
                     data_size = info.rs2_value
                     tmp_send_request = InnerPacket(dest_id,data_size,self.send_callback)
@@ -272,7 +274,7 @@ class Transfer(StageBase):
             if self.stage_reg.stage_data.op == 'send':
                 if self.inner_reg.busy_cycle > 0:
                     self.inner_reg.busy_cycle = self.inner_reg.busy_cycle -1
-                if self.inner_reg.busy_cycle <=1 :
+                if self.inner_reg.busy_cycle == 0  :
                     if self.transfer_state == 'finish':
                         self.inner_reg.transfer_unfinished = False
                         self.reset_transfer_state()
@@ -287,6 +289,14 @@ class Transfer(StageBase):
 
                     if self.inner_reg.busy_cycle <= 1:
                         self.inner_reg.transfer_unfinished = False
+
+
+    # def neg_tick(self):
+    #     if self.stage_reg.stage_data.op == 'send':
+    #         print('send:'+self.state)
+    #         print('inst:'+self.stage_reg.stage_data.dump_asm())
+    #     if self.stage_reg.stage_data.op == 'recv':
+    #         print('recv:' + self.state)
 
 
 
@@ -332,8 +342,8 @@ class Transfer(StageBase):
         self.gateway.set_idle()
 
 
-    def print_info(self):
-        print('Transfer:\n'
+    def dump_info(self):
+        return ('Transfer:\n'
               'inst:{}\n'
               'stall:{}\n'
               'busy_cycle:{}\n'.format(self.stage_reg.stage_data.dump_asm(), self.stall_engine.check_stall(self.level),

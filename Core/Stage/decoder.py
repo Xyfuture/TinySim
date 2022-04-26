@@ -28,7 +28,7 @@ class Decoder(StageBase):
     def compute_cycle_energy(self):
         pass
 
-    def print_info(self):
-        print('Decoder:\n'
+    def dump_info(self):
+        return  ('Decoder:\n'
               'inst:{}\n'
               'stall:{}\n'.format(self.stage_reg.stage_data.dump_asm(),self.stall_engine.check_stall(self.level)))

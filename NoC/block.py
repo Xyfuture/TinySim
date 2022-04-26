@@ -31,5 +31,5 @@ class BlockedNoc(NoCBase):
         pass
 
     def compute_transfer_latency(self,packet:DataPacket):
-        return 1
+        return 10
 

@@ -21,6 +21,18 @@ class PendingEvent:
             return 1
         return 0
 
+    def __lt__(self, other):
+        return self.pending_cycles < other.pending_cycles
+
+
+    def __gt__(self, other):
+        return self.pending_cycles > other.pending_cycles
+
+
+    def __eq__(self, other):
+        return self.pending_cycles == other.pending_cycles
+
+
 
 class PendingQueue:
     def __init__(self):

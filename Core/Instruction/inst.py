@@ -69,14 +69,14 @@ class instruction:
         return _str
 
     # binary 解析部分
-    def opcode_binary_parse(self):
-        funct5_op = ['vvarith','vvshift','vact','sreg']
-
-        tmp_op = OPCODE_MAP_B2S[self.binary_inst[0:7]]
-        if tmp_op in funct5_op:
-            self.op = RE_MAP[tmp_op][self.binary_inst[22:27]]
-        else:
-            self.op = tmp_op
+    # def opcode_binary_parse(self):
+    #     funct5_op = ['vvarith','vvshift','vact','sreg']
+    #
+    #     tmp_op = OPCODE_MAP_B2S[self.binary_inst[0:7]]
+    #     if tmp_op in funct5_op:
+    #         self.op = RE_MAP[tmp_op][self.binary_inst[22:27]]
+    #     else:
+    #         self.op = tmp_op
 
     # def reg_binary_parse(self):
     #     self.rd = int(self.binary_inst[7:12],2)
