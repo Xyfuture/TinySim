@@ -25,7 +25,7 @@ class Scalar(StageBase):
         self.compute_cycle_energy()
 
         if self.stage_reg.current_eu == 'seu':
-            self.scalar_excute()
+            self.scalar_execute()
 
     def stall_info(self):
         return None
@@ -37,7 +37,7 @@ class Scalar(StageBase):
     def compute_cycle_energy(self):
         pass
 
-    def scalar_excute(self):
+    def scalar_execute(self):
         stage_data = self.stage_reg.stage_data
         
         
@@ -60,8 +60,15 @@ class Scalar(StageBase):
         elif stage_data.op == 'smuli':
             self.reg_file[rd] = self.reg_file[rs1] * imm
 
+        # load-store 指令
+        if stage_data.op == 'ldi':
+            self.reg_file[rd] = imm
+        # 其他几个暂时不考虑执行，否则就是完全模拟了 emmm
 
-    def print_info(self):
-        print('Scalar:\n'
+
+
+
+    def dump_info(self):
+        return ('Scalar:\n'
               'inst:{}\n'
               'stall:{}\n'.format(self.stage_reg.stage_data.op, self.stall_engine.check_stall(self.level)))

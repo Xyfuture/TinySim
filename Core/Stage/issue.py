@@ -40,7 +40,9 @@ class Issue(StageBase):
             current_eu = 'veu'
         elif stage_data.op[0] == 's' and stage_data.op not in ['send','st','sti']:
             current_eu = 'seu'
-        elif stage_data.op in {'send','recv','ld','st','sti','ldi'}:
+        elif stage_data.op in {'ld','st','sti','ldi'}:
+            current_eu = 'seu'
+        elif stage_data.op in {'send','recv'}:
             current_eu = 'dtu'
         elif stage_data.op in {'bind','unbind','gemv','gvr'}:
             current_eu = 'meu'
@@ -51,7 +53,7 @@ class Issue(StageBase):
         return current_eu
 
 
-    def print_info(self):
-        print('Issue:\n'
+    def dump_info(self):
+        return ('Issue:\n'
               'inst:{}\n'
               'stall:{}\n'.format(self.stage_reg.stage_data.dump_asm(),self.stall_engine.check_stall(self.level)))
