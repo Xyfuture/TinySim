@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from Core.Instruction.inst import instruction
-from Core.Stage.Storage.regFile import RegFile
+from Core.Stage.Storage.mem import ScratchPad
 from Core.Stage.base import StageBase
 from Core.Utils.misc import ExecInfo
 from Core.Utils.reg import Register
@@ -9,12 +9,13 @@ from Core.Stage.stall import StallEvent
 
 
 class MatrixGroup(StageBase):
-    def __init__(self,packet_id,meu_num):
+    def __init__(self,packet_id,meu_num,scratchpad):
         super(MatrixGroup, self).__init__()
         self.level = 5
 
         self.packet_id = packet_id
         self.meu_num = meu_num
+        self.scratchpad = scratchpad
 
         self.stage_reg.info = ExecInfo(eu='none', inst=instruction())
         self.stage_reg.current_eu = 'none'
@@ -23,6 +24,13 @@ class MatrixGroup(StageBase):
         self.inner_reg.busy_cycle = 0
 
         # self.stage_reg.finish = 0
+
+        # 暂时使用固定参数的8bit 乘加运算时间。 不计算访存的时间情况
+        self.compute_latency = 1000 # Unit cycle or ns
+        self.compute_energy = 40400 # pJ mW * nS
+
+        # 静态功耗低暂时不考虑了。
+
 
 
     def set_pos_reg(self):
@@ -39,7 +47,7 @@ class MatrixGroup(StageBase):
 
     def pos_tick(self):
         self.add_cycle_cnt()
-        self.compute_cycle_energy()
+        # self.compute_dynamic_energy()
 
 
 
@@ -50,7 +58,6 @@ class MatrixGroup(StageBase):
             cur_packet_id = self.stage_reg.info.rd_value
             if self.stage_reg.current_eu == 'meu' and cur_packet_id == self.packet_id:
                 self.inner_reg.busy_cycle = self.set_busy_cycle()
-
 
 
     @property
@@ -87,15 +94,36 @@ class MatrixGroup(StageBase):
                 return StallEvent("MatrixExecuteUnit",self.level)
         return None
 
-    def compute_cycle_energy(self):
+    def compute_dynamic_energy(self):
+        # data_size = self.stage_reg.info.rs2_value
+        if self.stage_reg.stage_data.op == 'gemv':
+            self.dynamic_energy += self.meu_num * self.compute_energy
+        # gvr 没有功耗计算
+
+
+    def compute_leakage_energy(self):
+        # 太小，暂不计算
         pass
 
+
     def set_busy_cycle(self):
-        if self.stage_reg.stage_data.op == 'none':
-            return 0
+        # 在这里处理访存相关的事宜
+        self.compute_dynamic_energy()
+
         if self.stage_reg.stage_data.op == 'gemv':
-            return 0
-        return 5
+            read_size = self.stage_reg.info.rs2_value
+            read_latency = self.scratchpad.read_mem(read_size)
+            compute_latency = self.compute_latency
+
+            return read_latency + compute_latency
+
+        elif self.stage_reg.stage_data.op == 'gvr':
+            write_size = self.stage_reg.info.rs2_value
+            write_latency = self.scratchpad.read_mem(write_size)
+
+            return write_latency
+
+        return 0
 
 
     def dump_info(self):
@@ -108,7 +136,7 @@ class MatrixGroup(StageBase):
 
 
 class Matrix(StageBase):
-    def __init__(self,pipeline):
+    def __init__(self,pipeline,scratchpad):
         super(Matrix, self).__init__()
         self.level = 5
 
@@ -118,7 +146,7 @@ class Matrix(StageBase):
         self.meu_dict = OrderedDict()
 
         self.pipeline = pipeline
-
+        self.scratchpad = scratchpad
 
     def set_pos_reg(self):
         tmp = self.pre_stage_list[0].send_data
@@ -133,7 +161,7 @@ class Matrix(StageBase):
             packet_id = self.stage_reg.info.rd_value
             num = self.stage_reg.stage_data.imm
 
-            tmp_meu = MatrixGroup(packet_id, num)
+            tmp_meu = MatrixGroup(packet_id, num, self.scratchpad)
             tmp_meu.set_stall_engine(self.stall_engine)
             self.meu_dict[packet_id] = tmp_meu
 
@@ -155,7 +183,10 @@ class Matrix(StageBase):
     def stall_info(self):
         return None
 
-    def compute_cycle_energy(self):
+    def compute_dynamic_energy(self):
+        pass
+
+    def compute_leakage_energy(self):
         pass
 
     def compute_total_energy(self):

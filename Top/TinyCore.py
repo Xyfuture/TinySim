@@ -18,6 +18,8 @@ from Core.Stage.memQueue import MemQueue
 
 
 from Core.Stage.Storage.regFile import RegFile
+from Core.Stage.Storage.mem import ScratchPad
+
 
 
 class TinyCore(PipeLineBase):
@@ -26,6 +28,7 @@ class TinyCore(PipeLineBase):
         self.core_id = core_id
 
         self.reg_file = RegFile()
+        self.scratchpad = ScratchPad()
         self.config = SimConfig()
 
 
@@ -34,9 +37,9 @@ class TinyCore(PipeLineBase):
         self.ri_stage = Issue()
 
         self.mem_queue = MemQueue(self.reg_file)
-        self.meu_stage = Matrix(self)
-        self.veu_stage = Vector()
-        self.dtu_stage = Transfer()
+        self.meu_stage = Matrix(self,self.scratchpad)
+        self.veu_stage = Vector(self.scratchpad)
+        self.dtu_stage = Transfer(self.scratchpad)
 
         self.seu_stage = Scalar(self.reg_file)
 

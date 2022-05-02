@@ -1,14 +1,16 @@
 from Core.Instruction.inst import instruction
-from Core.Stage.Storage.regFile import RegFile
+from Core.Stage.Storage.mem import ScratchPad
 from Core.Stage.base import StageBase
 from Core.Utils.misc import ExecInfo
 from Core.Stage.stall import StallEvent
 from Core.Utils.reg import Register
 
 class Vector(StageBase):
-    def __init__(self):
+    def __init__(self,scratchpad):
         super(Vector, self).__init__()
         self.level = 5
+
+        self.scratchpad = scratchpad
 
         self.stage_reg.info = ExecInfo(eu='none', inst=instruction())
         self.stage_reg.current_eu = 'none'
@@ -25,6 +27,11 @@ class Vector(StageBase):
 
         # self.stage_reg.finish = 0 # 使用这个要保证busy_cycle必须时间大于1，至少执行两个周期
 
+        self.alu_length = 32 # 32 * 1 Byte
+        self.alu_per_energy = 0
+
+
+
     # 目前没有考虑stall的情况
     def set_pos_reg(self):
         if self.state == 'idle':
@@ -39,7 +46,7 @@ class Vector(StageBase):
 
     def pos_tick(self):
         self.add_cycle_cnt()
-        self.compute_cycle_energy()
+        self.compute_dynamic_energy()
 
 
     def set_neg_reg(self):
@@ -85,15 +92,28 @@ class Vector(StageBase):
         return None
 
 
-    def compute_cycle_energy(self):
+    def compute_dynamic_energy(self):
         pass
 
+
+    def compute_leakage_energy(self):
+        pass
+
+
     def set_busy_cycle(self):
-        if self.stage_reg.stage_data.op == 'none':
-            return 0
+        self.compute_dynamic_energy()
+
         if self.stage_reg.stage_data.op == 'vvset':
             return 0
-        return 2
+        elif self.stage_reg.stage_data.op[0] == 'v':
+            data_size = self.vvset_reg.vvset_length * self.vvset_reg.vvset_bitwidth
+            read_latency = self.scratchpad.read_mem(data_size) * 2
+            write_latency = self.scratchpad.read_mem(data_size)
+            compute_latency = data_size/self.alu_length
+
+            return read_latency+write_latency+compute_latency
+
+        return 0
 
     def vvset(self):
         if self.stage_reg.stage_data.op == 'vvset':

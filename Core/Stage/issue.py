@@ -22,7 +22,7 @@ class Issue(StageBase):
 
     def pos_tick(self):
         self.add_cycle_cnt()
-        self.compute_cycle_energy()
+        self.compute_dynamic_energy()
 
     @property
     def send_data(self):
@@ -31,8 +31,12 @@ class Issue(StageBase):
     def stall_info(self):
         return None
 
-    def compute_cycle_energy(self):
+    def compute_dynamic_energy(self):
         pass
+
+    def compute_leakage_energy(self):
+        pass
+
 
     def eu_dispatch(self):
         stage_data = self.stage_reg.stage_data

@@ -15,6 +15,9 @@ class MetaStage(StageBase):
     def send_data(self):
         return 0
 
-    def compute_cycle_energy(self):
+    def compute_dynamic_energy(self):
+        return 0
+
+    def compute_leakage_energy(self):
         return 0
 

@@ -23,7 +23,7 @@ class Fetch(StageBase):
 
     def pos_tick(self):
         self.add_cycle_cnt()
-        self.compute_cycle_energy()
+        self.compute_dynamic_energy()
 
         # if self.inner_reg.pc < self.inst_count:
         #     self.send_data = self.inst_buffer[self.inner_reg.pc]
@@ -40,9 +40,11 @@ class Fetch(StageBase):
     def stall_info(self):
         return None
 
-    def compute_cycle_energy(self):
+    def compute_dynamic_energy(self):
         pass
 
+    def compute_leakage_energy(self):
+        pass
 
     def load_dict(self,file_name):
         self.inst_buffer.load_dict(file_name)

@@ -110,7 +110,7 @@ class IMA:
 
         self.energy = DAC_energy + xbar_enery + ADC_energy + shift_add_energy
 
-        self.energy *= 1e-3 # 转换为 nJ
+        # self.energy *= 1e-3 # 转换为 nJ
 
 
 if __name__ == "__main__":

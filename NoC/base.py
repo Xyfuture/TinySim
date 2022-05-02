@@ -58,6 +58,8 @@ class PendingQueue:
 class NoCBase(metaclass=ABCMeta):
     def __init__(self,mesh_layout):
         self.mesh_layout = mesh_layout
+        self.mesh_row,self.mesh_column = self.mesh_layout
+
 
         self.gateway_dict = {}
         self.pending_event_dict = {}

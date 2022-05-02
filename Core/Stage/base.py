@@ -24,6 +24,9 @@ class StageBase(metaclass=ABCMeta):
 
         # 本身用于记录的信息 （其实也应该弄成另一个类）
         self.total_energy = 0
+        self.dynamic_energy = 0
+        self.leakage_energy = 0
+
         self.total_cycles = 0
         self.stall_cycles = 0
 
@@ -93,9 +96,12 @@ class StageBase(metaclass=ABCMeta):
 
     # 计算一个周期或者多个周期的功耗
     @abstractmethod
-    def compute_cycle_energy(self):
+    def compute_dynamic_energy(self):
         pass
 
+    @abstractmethod
+    def compute_leakage_energy(self):
+        pass
 
 
     # 构建连接关系
@@ -111,6 +117,8 @@ class StageBase(metaclass=ABCMeta):
         self.post_stage_list.append(s)
 
     def compute_total_energy(self):
+        self.compute_leakage_energy()
+        self.total_energy = self.dynamic_energy + self.leakage_energy
         return self.total_energy
 
     def add_cycle_cnt(self):

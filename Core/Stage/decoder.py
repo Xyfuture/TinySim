@@ -14,7 +14,7 @@ class Decoder(StageBase):
 
 
     def pos_tick(self):
-        self.compute_cycle_energy()
+        self.compute_dynamic_energy()
         self.add_cycle_cnt()
 
     @property
@@ -25,7 +25,10 @@ class Decoder(StageBase):
         return None
 
 
-    def compute_cycle_energy(self):
+    def compute_dynamic_energy(self):
+        pass
+
+    def compute_leakage_energy(self):
         pass
 
     def dump_info(self):

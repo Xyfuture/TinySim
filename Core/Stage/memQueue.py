@@ -70,7 +70,7 @@ class MemQueue(StageBase):
 
     def pos_tick(self):
         self.add_cycle_cnt()
-        self.compute_cycle_energy()
+        self.compute_dynamic_energy()
 
 
 
@@ -111,7 +111,10 @@ class MemQueue(StageBase):
                 return StallEvent("MemoryQueue",self.level)
         return None
 
-    def compute_cycle_energy(self):
+    def compute_dynamic_energy(self):
+        pass
+
+    def compute_leakage_energy(self):
         pass
 
     def vvset(self):

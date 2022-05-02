@@ -22,7 +22,7 @@ class Scalar(StageBase):
 
     def pos_tick(self):
         self.add_cycle_cnt()
-        self.compute_cycle_energy()
+        self.compute_dynamic_energy()
 
         if self.stage_reg.current_eu == 'seu':
             self.scalar_execute()
@@ -34,7 +34,10 @@ class Scalar(StageBase):
     def send_data(self):
         return 0
 
-    def compute_cycle_energy(self):
+    def compute_dynamic_energy(self):
+        pass
+
+    def compute_leakage_energy(self):
         pass
 
     def scalar_execute(self):
