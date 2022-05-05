@@ -80,7 +80,15 @@ class TinyCore(PipeLineBase):
     def forward_one_cycle(self):
         super(TinyCore, self).forward_one_cycle()
         self.stall_engine.update()
-        self.print_info()
+        # self.print_info()
 
     def set_gateway(self,gateway):
         self.dtu_stage.set_gateway(gateway)
+
+    def check_halt(self):
+        state = True
+        for k,stage in self._stages.items():
+            if stage.stage_reg.stage_data.op != 'none':
+                state = False
+                break
+        return state

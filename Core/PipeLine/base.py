@@ -30,10 +30,16 @@ class PipeLineBase(metaclass=ABCMeta):
         pass
     # 记得return最终输出的所有stage
 
+
     #完成构建整个流水线图结构
     def build(self):
         ret = self.structure(self.head_stage)
         self.tail_stage.connect_to(*ret)
+
+    def check_halt(self):
+        return False
+
+
 
     def set_pos_reg(self):
         for k,stage in self._stages.items():

@@ -14,13 +14,34 @@ class ChipTop:
         self.core_dict = {}
         self.gateway_dict = {}
         self.noc_bus = BlockedNoc(self.mesh_layout)
+        self.cycles = 0
 
-    def run(self):
+    def run_cycle(self):
         # 运行整个芯片
         for k,core in self.core_dict.items():
             core.forward_one_cycle()
         self.noc_bus.ticktock()
 
+    def run_all(self):
+        core_halt_state = {}
+        for i in self.core_dict:
+            core_halt_state[i] = False #没有halt
+
+        while True:
+            self.run_cycle()
+            if self.cycles%100 == 0:
+                print(self.cycles)
+                for core_id in list(core_halt_state.keys()):
+                    if not core_halt_state[core_id]:
+                        core_halt_state[core_id] = self.core_dict[core_id].check_halt()
+                chip_halt_state = True
+                for k,v in core_halt_state.items():
+                    if not v:
+                        chip_halt_state = False
+                        break
+                if chip_halt_state:
+                    break
+            self.cycles += 1
 
     def build(self):
         # 构建 core 和 gateway
