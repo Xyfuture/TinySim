@@ -10,7 +10,7 @@ import math
 class ScratchPad:
     def __init__(self):
 
-        self.bus_bitwidth = 128 # Byte
+        self.bus_bitwidth = 128*2 # Byte # 2048 bit
         self.mem_size = 1024*1024  # Byte
 
         self.access_latency = 3 # cycle or ns

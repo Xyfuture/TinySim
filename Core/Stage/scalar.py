@@ -9,14 +9,15 @@ from Core.Stage.base import StageBase
 class Scalar(StageBase):
     def __init__(self,reg_file:RegFile):
         super(Scalar, self).__init__()
-        self.level = 5
+        self.level = 4
 
         self.reg_file = reg_file
         self.stage_reg.current_eu = 'none'
 
     def set_pos_reg(self):
-        recv_data = self.pre_stage_list[0].send_data
-        self.stage_reg.current_eu,self.stage_reg.stage_data = recv_data['eu'],recv_data['inst']
+        if self.stall_engine.check_not_stall(self.level):
+            recv_data = self.pre_stage_list[0].send_data
+            self.stage_reg.current_eu,self.stage_reg.stage_data = recv_data['eu'],recv_data['inst']
 
 
 
@@ -74,4 +75,4 @@ class Scalar(StageBase):
     def dump_info(self):
         return ('Scalar:\n'
               'inst:{}\n'
-              'stall:{}\n'.format(self.stage_reg.stage_data.op, self.stall_engine.check_stall(self.level)))
+              'stall:{}\n'.format(self.stage_reg.stage_data.dump_asm(), self.stall_engine.check_stall(self.level)))

@@ -69,6 +69,8 @@ class TinyCore(PipeLineBase):
         # # self.meu_stage.bypass_connect_to(self.mem_queue) # 不是这条旁路
         # self.veu_stage.bypass_connect_to(self.mem_queue)
         self.mem_queue.bypass_connect_to(self.veu_stage) # 用于删除操作
+        self.mem_queue.bypass_connect_to(self.dtu_stage)
+        # self.mem_queue.bypass_connect_to(self.meu_stage)
 
         # return [self.meu_stage,self.veu_stage,self.dtu_stage]
 
@@ -88,6 +90,8 @@ class TinyCore(PipeLineBase):
     def check_halt(self):
         state = True
         for k,stage in self._stages.items():
+            if isinstance(stage,Fetch):
+                print('pc:{}'.format(stage.inner_reg.pc))
             if stage.stage_reg.stage_data.op != 'none':
                 state = False
                 break

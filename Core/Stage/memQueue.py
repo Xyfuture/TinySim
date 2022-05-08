@@ -18,7 +18,7 @@ RD_READ = {}
 RS1_WRITE = {"recv","gvr"}
 RS2_WRITE = {}
 RD_WRITE = {"vvadd","vvsub","vvmul","vvgtm","vvgt","vveq","vvand","vvor","vvsll","vvsra","vvdmul","vinvt","vrandg","vrelu","vsigmoid","vtanh","vmv",
-            "st","sti"}
+            "st"} # sti remove
 
 
 
@@ -54,10 +54,10 @@ class MemQueue(StageBase):
                 finish_interval = stage.finish_interval
                 if finish_interval:
                     queue.remove(finish_interval)
-            if self.pre_reg.pre_interval:
-                queue.append(self.pre_reg.pre_interval)
+            if self.stall_engine.check_not_stall(self.level):
+                if self.pre_reg.pre_interval:
+                    queue.append(self.pre_reg.pre_interval)
             self.queue_reg.write_queue = queue
-
 
         elif self.state == 'busy':
             queue = copy.deepcopy(self.queue_reg.write_queue)
@@ -78,11 +78,25 @@ class MemQueue(StageBase):
     def set_neg_reg(self):
         self.vvset()
 
+        # if self.stall_engine.check_not_stall(self.level):
+        #     if self.state == 'idle':
+        #         length = self.gen_mem_length()
+        #         start_addr = self.gen_mem_write_start_addr()
+        #
+        #         if start_addr:
+        #             interval = (start_addr,start_addr+length-1)
+        #             self.pre_reg.pre_interval = interval
+        #         else:
+        #             self.pre_reg.pre_interval = None
+        #     else:
+        #         self.pre_reg.pre_interval = None
+        # else:
+        #     self.pre_reg.pre_interval = None
         length = self.gen_mem_length()
         start_addr = self.gen_mem_write_start_addr()
 
         if start_addr:
-            interval = (start_addr,start_addr+length-1)
+            interval = (start_addr, start_addr + length - 1)
             self.pre_reg.pre_interval = interval
         else:
             self.pre_reg.pre_interval = None

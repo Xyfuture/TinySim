@@ -14,7 +14,7 @@ class SimConfig:
 
         self.reg_cnt = 32
 
-        self.mesh_layout = (1,2) # mesh结构下，横向上和竖向上各自有几个核
+        self.mesh_layout = (2,2) # mesh结构下，横向上和竖向上各自有几个核
         self.core_cnt = self.mesh_layout[0] * self.mesh_layout[1]
 
 

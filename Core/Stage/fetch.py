@@ -33,7 +33,9 @@ class Fetch(StageBase):
     @property
     def send_data(self):
         if self.inner_reg.pc < self.inst_count:
-            return self.inst_buffer[self.inner_reg.pc]
+            tmp = self.inst_buffer[self.inner_reg.pc]
+            tmp.pc = self.inner_reg.pc
+            return tmp
         else:
             return instruction()
 

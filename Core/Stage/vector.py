@@ -113,6 +113,8 @@ class Vector(StageBase):
 
             return read_latency+write_latency+compute_latency
 
+
+
         return 0
 
     def vvset(self):

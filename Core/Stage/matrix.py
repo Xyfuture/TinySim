@@ -56,7 +56,7 @@ class MatrixGroup(StageBase):
             self.inner_reg.busy_cycle = self.inner_reg.busy_cycle -1
         elif self.state == 'idle':
             cur_packet_id = self.stage_reg.info.rd_value
-            if self.stage_reg.current_eu == 'meu' and cur_packet_id == self.packet_id:
+            if self.stage_reg.stage_data.op == 'gemv' and cur_packet_id == self.packet_id:
                 self.inner_reg.busy_cycle = self.set_busy_cycle()
 
 
@@ -77,7 +77,7 @@ class MatrixGroup(StageBase):
 
         # if self.stage_reg.finish:
         cur_packet_id = self.stage_reg.info.rd_value
-        if self.stage_reg.current_eu == 'meu' and self.state == 'idle' and cur_packet_id == self.packet_id:
+        if self.stage_reg.stage_data.op == 'gemv' and self.state == 'idle' and cur_packet_id == self.packet_id:
             start_addr = self.stage_reg.info.write_start_addr
             length = self.stage_reg.info.length
 
@@ -90,7 +90,7 @@ class MatrixGroup(StageBase):
     def stall_info(self):
         if self.state == 'busy':
             info = self.pre_stage_list[0].send_data
-            if info['eu'] == 'meu':
+            if info['inst'].op == 'gemv' and info['rd_value'] == self.packet_id:
                 return StallEvent("MatrixExecuteUnit",self.level)
         return None
 
@@ -130,7 +130,107 @@ class MatrixGroup(StageBase):
         return ('MatrixGroup_packet_id_{}:\n'
               'inst:{}\n'
               'stall:{}\n'
-              'busy_cycle:{}\n'.format(self.packet_id,self.stage_reg.stage_data.op,self.stall_engine.check_stall(self.level),self.inner_reg.busy_cycle))
+              'busy_cycle:{}\n'.format(self.packet_id,self.stage_reg.stage_data.dump_asm(),self.stall_engine.check_stall(self.level),self.inner_reg.busy_cycle))
+
+
+
+
+
+
+class MatrixGVR(StageBase):
+    def __init__(self,packet_id,meu_num,scratchpad):
+        super(MatrixGVR, self).__init__()
+        self.level = 5
+        self.packet_id = packet_id
+        self.meu_num = meu_num
+        self.scratchpad = scratchpad
+
+        self.stage_reg.info = ExecInfo(eu='none', inst=instruction())
+        self.stage_reg.current_eu = 'none'
+
+        self.inner_reg = Register('neg')
+        self.inner_reg.busy_cycle = 0
+
+    def set_pos_reg(self):
+        if self.state == 'idle':
+            tmp = self.pre_stage_list[0].send_data
+            self.stage_reg.info = tmp
+            self.stage_reg.current_eu, self.stage_reg.stage_data = tmp['eu'], tmp['inst']
+
+    def pos_tick(self):
+        self.add_cycle_cnt()
+        # self.compute_dynamic_energy()
+
+    def set_neg_reg(self):
+        if self.state == 'busy':
+            self.inner_reg.busy_cycle = self.inner_reg.busy_cycle -1
+        elif self.state == 'idle':
+            cur_packet_id = self.stage_reg.info.rd_value
+            if self.stage_reg.stage_data.op == 'gvr' and cur_packet_id == self.packet_id:
+                self.inner_reg.busy_cycle = self.set_busy_cycle()
+
+    @property
+    def send_data(self):
+        return  0
+
+    @property
+    def state(self):
+        if self.inner_reg.busy_cycle > 0:
+            return 'busy'
+        else:
+            return 'idle'
+
+    @property
+    def finish_interval(self):
+        interval = None
+
+        # if self.stage_reg.finish:
+        cur_packet_id = self.stage_reg.info.rd_value
+        if self.stage_reg.stage_data.op == 'gvr' and self.state == 'idle' and cur_packet_id == self.packet_id:
+            start_addr = self.stage_reg.info.write_start_addr
+            length = self.stage_reg.info.length
+
+            if start_addr:
+                interval = (start_addr,start_addr+length-1)
+
+        return interval
+
+    def stall_info(self):
+        if self.state == 'busy':
+            info = self.pre_stage_list[0].send_data
+            if info['inst'].op == 'gvr' and info['rd_value'] == self.packet_id:
+                return StallEvent("MatrixGVRUnit",self.level)
+        return None
+
+    def compute_dynamic_energy(self):
+        # data_size = self.stage_reg.info.rs2_value
+        # if self.stage_reg.stage_data.op == 'gemv':
+        #     self.dynamic_energy += self.meu_num * self.compute_energy
+        # gvr 没有功耗计算
+        pass
+
+    def compute_leakage_energy(self):
+        # 太小，暂不计算
+        pass
+
+
+    def set_busy_cycle(self):
+        # 在这里处理访存相关的事宜
+        # self.compute_dynamic_energy()
+        if self.stage_reg.stage_data.op == 'gvr':
+            write_size = self.stage_reg.info.rs2_value
+            write_latency = self.scratchpad.read_mem(write_size)
+            return write_latency
+
+        return 0
+
+
+    def dump_info(self):
+        return ('MatrixGVR_packet_id_{}:\n'
+              'inst:{}\n'
+              'stall:{}\n'
+              'busy_cycle:{}\n'.format(self.packet_id,self.stage_reg.stage_data.dump_asm(),self.stall_engine.check_stall(self.level),self.inner_reg.busy_cycle))
+
 
 
 
@@ -144,6 +244,7 @@ class Matrix(StageBase):
         self.stage_reg.current_eu = 'none'
 
         self.meu_dict = OrderedDict()
+        self.meu_gvr_dict = OrderedDict()
 
         self.pipeline = pipeline
         self.scratchpad = scratchpad
@@ -165,15 +266,25 @@ class Matrix(StageBase):
             tmp_meu.set_stall_engine(self.stall_engine)
             self.meu_dict[packet_id] = tmp_meu
 
+            tmp_meu_gvr = MatrixGVR(packet_id, num, self.scratchpad)
+            tmp_meu_gvr.set_stall_engine(self.stall_engine)
+            self.meu_gvr_dict[packet_id] = tmp_meu_gvr
+
             for stage in self.pre_stage_list:
                 tmp_meu.connect_to(stage)
-                # tmp_meu.bypass_connect_to(stage)
+                tmp_meu.bypass_connect_to(stage)
                 stage.bypass_connect_to(tmp_meu)
+
+                tmp_meu_gvr.connect_to(stage)
+                stage.bypass_connect_to(tmp_meu_gvr)
+
 
             for stage in self.post_stage_list:
                 stage.connect_to(tmp_meu)
+                stage.connect_to(tmp_meu_gvr)
 
-            self.pipeline.__setattr__("meu_packet_id:".format(packet_id),tmp_meu)
+            self.pipeline.__setattr__("meu_packet_id:{}".format(packet_id),tmp_meu)
+            self.pipeline.__setattr__("meu_gvr_packet_id:{}".format(packet_id),tmp_meu_gvr)
 
 
     @property

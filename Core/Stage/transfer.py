@@ -138,7 +138,7 @@ class Transfer(StageBase):
         interval = None
         if self.stage_reg.stage_data.op in ['send','recv']:
             if not self.inner_reg.transfer_unfinished:
-                start_addr = self.stage_reg.info.start_addr
+                start_addr = self.stage_reg.info.write_start_addr
                 length = self.stage_reg.info.length
 
                 if start_addr:
