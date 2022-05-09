@@ -90,8 +90,8 @@ class TinyCore(PipeLineBase):
     def check_halt(self):
         state = True
         for k,stage in self._stages.items():
-            if isinstance(stage,Fetch):
-                print('pc:{}'.format(stage.inner_reg.pc))
+            # if isinstance(stage,Fetch):
+            #     print('pc:{}'.format(stage.inner_reg.pc))
             if stage.stage_reg.stage_data.op != 'none':
                 state = False
                 break

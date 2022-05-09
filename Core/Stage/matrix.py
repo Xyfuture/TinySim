@@ -17,6 +17,9 @@ class MatrixGroup(StageBase):
         self.meu_num = meu_num
         self.scratchpad = scratchpad
 
+
+
+
         self.stage_reg.info = ExecInfo(eu='none', inst=instruction())
         self.stage_reg.current_eu = 'none'
 
@@ -86,6 +89,14 @@ class MatrixGroup(StageBase):
 
         return interval
 
+    @property
+    def fifo_cnt(self):
+        cur_packet_id = self.stage_reg.info.rd_value
+        if self.stage_reg.stage_data.op == 'gemv' and self.state == 'idle' and cur_packet_id == self.packet_id:
+            # print('finish one window')
+            return 1
+        return 0
+
 
     def stall_info(self):
         if self.state == 'busy':
@@ -147,11 +158,26 @@ class MatrixGVR(StageBase):
 
         self.stage_reg.info = ExecInfo(eu='none', inst=instruction())
         self.stage_reg.current_eu = 'none'
+        self.stage_reg.fifo_cnt = 0
 
         self.inner_reg = Register('neg')
         self.inner_reg.busy_cycle = 0
+        self.inner_reg.read_fifo = 0
 
     def set_pos_reg(self):
+        for stage in self.bypass_pre_stage_list:
+            cur_fifo_cnt = self.stage_reg.fifo_cnt
+            add_fifo_cnt = stage.fifo_cnt
+            sub_fifo_cnt = self.inner_reg.read_fifo
+            #
+            # if add_fifo_cnt == 1:
+            #     print('get 1')
+            # if sub_fifo_cnt == 1:
+            #     print('release 1')
+
+            self.stage_reg.fifo_cnt = cur_fifo_cnt + add_fifo_cnt - sub_fifo_cnt
+
+
         if self.state == 'idle':
             tmp = self.pre_stage_list[0].send_data
             self.stage_reg.info = tmp
@@ -162,12 +188,17 @@ class MatrixGVR(StageBase):
         # self.compute_dynamic_energy()
 
     def set_neg_reg(self):
+        self.inner_reg.read_fifo = 0
         if self.state == 'busy':
             self.inner_reg.busy_cycle = self.inner_reg.busy_cycle -1
+            if self.inner_reg.busy_cycle == 1:
+                self.inner_reg.read_fifo = 1 # 去掉该队列内容
         elif self.state == 'idle':
             cur_packet_id = self.stage_reg.info.rd_value
             if self.stage_reg.stage_data.op == 'gvr' and cur_packet_id == self.packet_id:
                 self.inner_reg.busy_cycle = self.set_busy_cycle()
+
+
 
     @property
     def send_data(self):
@@ -175,6 +206,9 @@ class MatrixGVR(StageBase):
 
     @property
     def state(self):
+        if self.stage_reg.stage_data.op == 'gvr' and self.stage_reg.info.rd_value == self.packet_id and self.stage_reg.fifo_cnt < 1:
+            return 'wait'
+
         if self.inner_reg.busy_cycle > 0:
             return 'busy'
         else:
@@ -193,10 +227,17 @@ class MatrixGVR(StageBase):
             if start_addr:
                 interval = (start_addr,start_addr+length-1)
 
+
         return interval
 
     def stall_info(self):
-        if self.state == 'busy':
+        if  self.state == 'wait':
+            info = self.pre_stage_list[0].send_data
+            if info['inst'].op == 'gvr' and info['rd_value'] == self.packet_id:
+                print('here')
+
+
+        if self.state == 'busy' or self.state == 'wait':
             info = self.pre_stage_list[0].send_data
             if info['inst'].op == 'gvr' and info['rd_value'] == self.packet_id:
                 return StallEvent("MatrixGVRUnit",self.level)
@@ -262,6 +303,8 @@ class Matrix(StageBase):
             packet_id = self.stage_reg.info.rd_value
             num = self.stage_reg.stage_data.imm
 
+            fifo_cnt = [0]
+
             tmp_meu = MatrixGroup(packet_id, num, self.scratchpad)
             tmp_meu.set_stall_engine(self.stall_engine)
             self.meu_dict[packet_id] = tmp_meu
@@ -269,6 +312,8 @@ class Matrix(StageBase):
             tmp_meu_gvr = MatrixGVR(packet_id, num, self.scratchpad)
             tmp_meu_gvr.set_stall_engine(self.stall_engine)
             self.meu_gvr_dict[packet_id] = tmp_meu_gvr
+
+            tmp_meu_gvr.bypass_connect_to(tmp_meu)
 
             for stage in self.pre_stage_list:
                 tmp_meu.connect_to(stage)
@@ -283,8 +328,8 @@ class Matrix(StageBase):
                 stage.connect_to(tmp_meu)
                 stage.connect_to(tmp_meu_gvr)
 
-            self.pipeline.__setattr__("meu_packet_id:{}".format(packet_id),tmp_meu)
-            self.pipeline.__setattr__("meu_gvr_packet_id:{}".format(packet_id),tmp_meu_gvr)
+            self.pipeline.__setattr__("meu_packet_id_{}".format(packet_id),tmp_meu)
+            self.pipeline.__setattr__("meu_gvr_packet_id_{}".format(packet_id),tmp_meu_gvr)
 
 
     @property

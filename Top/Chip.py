@@ -34,11 +34,12 @@ class ChipTop:
             # print(self.cycles)
             # if self.cycles ==1734:
             #     print('here')
-            if self.cycles%100000 == 0:
-                print(self.cycles)
+            if self.cycles%1000 == 0:
+                # print("cycles: {}".format(self.cycles))
                 for core_id in list(self.core_halt_state.keys()):
                     if not self.core_halt_state[core_id]:
                         self.core_halt_state[core_id] = self.core_dict[core_id].check_halt()
+                        # print('core_id:{} pc:{}'.format(core_id,self.core_dict[core_id].if_stage.inner_reg.pc))
                 chip_halt_state = True
                 for k,v in self.core_halt_state.items():
                     if not v:
@@ -47,7 +48,7 @@ class ChipTop:
                 if chip_halt_state:
                     break
             self.cycles += 1
-
+        return self.cycles
     def build(self):
         # 构建 core 和 gateway
         # core_id = 0
