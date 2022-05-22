@@ -96,3 +96,14 @@ class TinyCore(PipeLineBase):
                 state = False
                 break
         return state
+
+
+    def compute_total_energy(self):
+
+        for k,stage in self._stages.items():
+            self.total_energy += stage.compute_total_energy()
+
+        self.total_energy += self.scratchpad.compute_total_energy(self.total_cycles)
+        self.total_energy += self.reg_file.compute_total_energy(self.total_cycles)
+
+        return self.total_energy

@@ -16,6 +16,13 @@ class Issue(StageBase):
         # self.send_data = {'eu':'none','inst':instruction()}
         self.level = 3
 
+        self.dynamic_per_energy = 0.679075
+        self.leakage_per_energy = 0.0037482
+
+
+
+
+
     def set_pos_reg(self):
         if self.stall_engine.check_not_stall(self.level):
             self.stage_reg.stage_data = self.pre_stage_list[0].send_data
@@ -32,10 +39,11 @@ class Issue(StageBase):
         return None
 
     def compute_dynamic_energy(self):
-        pass
+        if self.stall_engine.check_not_stall(self.level):
+            self.dynamic_energy += self.dynamic_per_energy
 
     def compute_leakage_energy(self):
-        pass
+        self.leakage_energy = self.leakage_per_energy * self.total_cycles
 
 
     def eu_dispatch(self):

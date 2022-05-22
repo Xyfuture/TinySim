@@ -28,8 +28,10 @@ class Vector(StageBase):
         # self.stage_reg.finish = 0 # 使用这个要保证busy_cycle必须时间大于1，至少执行两个周期
 
         self.alu_length = 32 # 32 * 1 Byte
-        self.alu_per_energy = 0
+        # self.alu_per_energy = 0
 
+        self.dynamic_per_energy = 1.75875625 * self.alu_length
+        self.leakage_per_energy = 0.1396375 * self.alu_length
 
 
     # 目前没有考虑stall的情况
@@ -46,7 +48,6 @@ class Vector(StageBase):
 
     def pos_tick(self):
         self.add_cycle_cnt()
-        self.compute_dynamic_energy()
 
 
     def set_neg_reg(self):
@@ -93,12 +94,10 @@ class Vector(StageBase):
 
 
     def compute_dynamic_energy(self):
-        pass
-
+        self.dynamic_energy += self.dynamic_per_energy
 
     def compute_leakage_energy(self):
-        pass
-
+        self.leakage_energy = self.leakage_per_energy * self.total_cycles
 
     def set_busy_cycle(self):
         self.compute_dynamic_energy()
@@ -110,7 +109,8 @@ class Vector(StageBase):
             read_latency = self.scratchpad.read_mem(data_size) * 2
             write_latency = self.scratchpad.read_mem(data_size)
             compute_latency = data_size/self.alu_length
-
+            if self.stage_reg.stage_data.op[0] == 'vvmul':
+                compute_latency *= 4
             return read_latency+write_latency+compute_latency
 
 

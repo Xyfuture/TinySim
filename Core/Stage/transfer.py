@@ -30,6 +30,9 @@ class Transfer(StageBase):
     def compute_leakage_energy(self):
         pass
 
+    def compute_total_energy(self):
+        return 0
+
     def set_busy_cycle(self):
         self.compute_dynamic_energy()
 
@@ -41,7 +44,6 @@ class Transfer(StageBase):
             data_size = self.stage_reg.info.rs2_value
             write_latency = self.scratchpad.write_mem(data_size)
             return write_latency
-
         return 0
 
 

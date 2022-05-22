@@ -131,6 +131,9 @@ class MemQueue(StageBase):
     def compute_leakage_energy(self):
         pass
 
+    def compute_total_energy(self):
+        return 0
+
     def vvset(self):
         if self.stage_reg.stage_data.op == 'vvset':
             self.vvset_reg.vvset_bitwidth = self.stage_reg.stage_data.bitwidth

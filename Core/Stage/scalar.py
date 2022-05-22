@@ -5,6 +5,8 @@ from Core.Instruction.inst import instruction
 from Core.Stage.Storage.regFile import RegFile
 from Core.Stage.base import StageBase
 
+# 加上 寄存器的功耗
+
 
 class Scalar(StageBase):
     def __init__(self,reg_file:RegFile):
@@ -14,10 +16,17 @@ class Scalar(StageBase):
         self.reg_file = reg_file
         self.stage_reg.current_eu = 'none'
 
+        self.dynamic_per_energy = 0 # 暂时没有计算
+        self.leakage_per_energy = 1.1171
+
+
+
     def set_pos_reg(self):
         if self.stall_engine.check_not_stall(self.level):
             recv_data = self.pre_stage_list[0].send_data
             self.stage_reg.current_eu,self.stage_reg.stage_data = recv_data['eu'],recv_data['inst']
+
+
 
 
 
@@ -36,10 +45,11 @@ class Scalar(StageBase):
         return 0
 
     def compute_dynamic_energy(self):
-        pass
+        if self.stage_reg.current_eu == 'seu':
+            self.dynamic_energy += self.dynamic_per_energy
 
     def compute_leakage_energy(self):
-        pass
+        self.leakage_energy = self.leakage_per_energy * self.total_cycles
 
     def scalar_execute(self):
         stage_data = self.stage_reg.stage_data

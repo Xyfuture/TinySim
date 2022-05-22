@@ -30,7 +30,7 @@ class MatrixGroup(StageBase):
 
         # 暂时使用固定参数的8bit 乘加运算时间。 不计算访存的时间情况
         self.compute_latency = 1000 # Unit cycle or ns
-        self.compute_energy = 40400 # pJ mW * nS
+        self.compute_energy = 40400*16 # pJ mW * nS
 
         # 静态功耗低暂时不考虑了。
 
@@ -109,7 +109,6 @@ class MatrixGroup(StageBase):
         # data_size = self.stage_reg.info.rs2_value
         if self.stage_reg.stage_data.op == 'gemv':
             self.dynamic_energy += self.meu_num * self.compute_energy
-        # gvr 没有功耗计算
 
 
     def compute_leakage_energy(self):
@@ -244,16 +243,13 @@ class MatrixGVR(StageBase):
         return None
 
     def compute_dynamic_energy(self):
-        # data_size = self.stage_reg.info.rs2_value
-        # if self.stage_reg.stage_data.op == 'gemv':
-        #     self.dynamic_energy += self.meu_num * self.compute_energy
-        # gvr 没有功耗计算
         pass
 
     def compute_leakage_energy(self):
-        # 太小，暂不计算
         pass
 
+    def compute_total_energy(self):
+        return 0
 
     def set_busy_cycle(self):
         # 在这里处理访存相关的事宜

@@ -16,6 +16,11 @@ class Fetch(StageBase):
         self.inner_reg = Register()
         self.inner_reg.pc = 0
 
+        self.dynamic_per_energy = 0.827873438 # Unit: pJ = mW * nS
+        self.leakage_per_energy = 0.00497109
+
+
+
 
     def set_pos_reg(self):
         if self.stall_engine.check_not_stall(self.level):
@@ -43,10 +48,11 @@ class Fetch(StageBase):
         return None
 
     def compute_dynamic_energy(self):
-        pass
+        if self.stall_engine.check_not_stall(self.level):
+            self.dynamic_energy += self.dynamic_per_energy
 
     def compute_leakage_energy(self):
-        pass
+        self.leakage_energy = self.leakage_per_energy * self.total_cycles
 
     def load_dict(self,file_name):
         self.inst_buffer.load_dict(file_name)

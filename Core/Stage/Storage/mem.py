@@ -10,7 +10,7 @@ import math
 class ScratchPad:
     def __init__(self):
 
-        self.bus_bitwidth = 128*2 # Byte # 2048 bit
+        self.bus_bitwidth = 128 # Byte # 1024 bit
         self.mem_size = 1024*1024  # Byte
 
         self.access_latency = 3 # cycle or ns
@@ -65,14 +65,16 @@ class ScratchPad:
         self.total_cycles = total_cycles
 
         self.pure_leakage_energy = self.leakage_power * self.total_cycles # Unit pJ = mW * nS
-        self.refresh_energy = self.refresh_per_energy * math.ceil(self.total_cycles/1e6 /8) # 8ms 刷新一次
+        self.refresh_energy = self.refresh_per_energy * (self.total_cycles/1e6 /8) # 8ms 刷新一次
 
         self.total_leakage_energy = self.pure_leakage_energy + self.refresh_energy
 
         return self.total_leakage_energy
 
-    def compute_total_energy(self):
+    def compute_total_energy(self,total_cycles):
         # Unit: pJ
+
+        self.compute_leakage_energy(total_cycles)
 
         self.total_dynamic_energy = self.write_dynamic_energy + self.read_dynamic_energy
         self.total_energy += self.total_leakage_energy + self.total_dynamic_energy

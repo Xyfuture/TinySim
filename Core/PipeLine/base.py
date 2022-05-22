@@ -15,6 +15,8 @@ class PipeLineBase(metaclass=ABCMeta):
         self.head_stage = MetaStage()
         self.tail_stage = MetaStage()
 
+        self.total_cycles = 0
+        self.total_energy = 0
         # self.build()
 
     def __setattr__(self, key, value):
@@ -29,6 +31,11 @@ class PipeLineBase(metaclass=ABCMeta):
     def structure(self,head_stage)-> List[StageBase]:
         pass
     # 记得return最终输出的所有stage
+
+
+    @abstractmethod
+    def compute_total_energy(self):
+        pass
 
 
     #完成构建整个流水线图结构
@@ -69,6 +76,8 @@ class PipeLineBase(metaclass=ABCMeta):
             stage.neg_tick()
 
     def forward_one_cycle(self):
+        self.total_cycles += 1
+
         self.set_pos_reg()
         self.posedge()
         self.pos_tick()

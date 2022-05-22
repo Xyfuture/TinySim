@@ -17,12 +17,16 @@ class ChipTop:
         self.cycles = 0
         self.core_halt_state = {}
 
+        self.total_energy = 0
+
     def run_cycle(self):
         # 运行整个芯片
         for k,core in self.core_dict.items():
             if not self.core_halt_state[k]:
                 core.forward_one_cycle()
         self.noc_bus.ticktock()
+
+
 
     def run_all(self):
 
@@ -34,7 +38,7 @@ class ChipTop:
             # print(self.cycles)
             # if self.cycles ==1734:
             #     print('here')
-            if self.cycles%1000 == 0:
+            if self.cycles%100 == 0:
                 # print("cycles: {}".format(self.cycles))
                 for core_id in list(self.core_halt_state.keys()):
                     if not self.core_halt_state[core_id]:
@@ -48,7 +52,16 @@ class ChipTop:
                 if chip_halt_state:
                     break
             self.cycles += 1
+
         return self.cycles
+
+    def compute_total_energy(self):
+        for k,core in self.core_dict.items():
+            if len(core.if_stage.inst_buffer.inst_list) != 0:
+                self.total_energy += core.compute_total_energy()
+        return self.total_energy
+
+
     def build(self):
         # 构建 core 和 gateway
         # core_id = 0
